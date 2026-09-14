@@ -107,7 +107,7 @@
     const missing = stages.filter((s) => isMissing(s.v)).map((s) => s.label);
     const zeros = stages.filter((s) => !isMissing(s.v) && Number(s.v) === 0).map((s) => s.label);
     const stuck = missing[0] || zeros[0] || "";
-    const chartH = 132;
+    const chartH = 140;
 
     const known = stages.map((s) => (isMissing(s.v) ? 0 : Number(s.v)));
     const max = Math.max(1, ...known);
@@ -122,32 +122,31 @@
         conv = "from last " + rate(s.v, prev);
       }
       const h = missingV
-        ? 72
+        ? 64
         : zero
-          ? 28
-          : Math.max(28, Math.round((Number(s.v) / max) * 128));
-      const cls = ["node", missingV ? "is-unknown" : "", zero ? "is-zero" : "", s.label === stuck ? "is-stuck" : ""]
+          ? 24
+          : Math.max(28, Math.round((Number(s.v) / max) * chartH));
+      const barCls = ["j-bar", missingV ? "is-unknown" : "", zero ? "is-zero" : ""]
         .filter(Boolean).join(" ");
-      return `<button type="button" class="${cls}" data-open="stage:${esc(s.key)}">
-        <span class="node-chart" aria-hidden="true">
-          <span class="node-fill" style="height:${h}px"></span>
-        </span>
-        <span class="node-meta">
-          <span class="node-n">${val(s.v)}</span>
-          <span class="node-l">${esc(s.label)}</span>
-          ${conv ? `<span class="node-c">${esc(conv)}</span>` : ""}
-        </span>
-      </button>`;
+      const stepCls = ["j-step", missingV ? "is-unknown" : "", zero ? "is-zero" : "", s.label === stuck ? "is-stuck" : ""]
+        .filter(Boolean).join(" ");
+      return `<div class="${stepCls}" role="button" tabindex="0" data-open="stage:${esc(s.key)}">
+        <div class="j-track" aria-hidden="true">
+          <span class="${barCls}" style="height:${h}px"></span>
+        </div>
+        <span class="j-val">${val(s.v)}</span>
+        <span class="j-lab">${esc(s.label)}</span>
+        ${conv ? `<span class="j-sub">${esc(conv)}</span>` : ""}
+      </div>`;
     }).join("");
 
     const bits = [];
     if (missing.length) bits.push(`Hatched = unread (${missing.join(", ")}).`);
     if (zeros.length) bits.push(`Red = observed zero (${zeros.join(", ")}).`);
-    bits.push("Click a step for definition, source, and the live system.");
 
     return `
       <div class="journey" role="list">${nodes}</div>
-      <div class="callout">${esc(bits.join(" "))}</div>
+      ${bits.length ? `<div class="callout">${esc(bits.join(" "))}</div>` : ""}
       ${sourceLine(fun.source)}`;
   }
 
@@ -823,8 +822,8 @@
 
     document.body.addEventListener("keydown", (e) => {
       if (e.key === "Escape") closeDrawer();
-      if (e.key === "Enter" && e.target.closest(".focus-card")) {
-        const key = e.target.closest(".focus-card").dataset.open;
+      if (e.key === "Enter" && e.target.closest("[data-open][role='button']")) {
+        const key = e.target.closest("[data-open]").dataset.open;
         if (key) inspect(key, d);
       }
     });

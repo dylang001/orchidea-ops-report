@@ -4,12 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex, nofollow" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
   <title>Orchidea · Outbound &amp; GTM Ops</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=15" />
+  <link rel="stylesheet" href="styles.css?v=16" />
 </head>
 <body class="tab-board grain-today">
   <a class="skip" href="#panel-board">Skip to report</a>
@@ -72,7 +74,7 @@
       data.src = "data.js?t=" + Date.now();
       data.onload = function () {
         var app = document.createElement("script");
-        app.src = "app.js?v=15";
+        app.src = "app.js?v=16";
         document.body.appendChild(app);
       };
       data.onerror = function () {
