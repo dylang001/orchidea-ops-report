@@ -252,7 +252,7 @@
     document.getElementById('hero-stats').innerHTML = [
       ['Today’s sends', val(day.sends), `of ${plain((d.capacity || {}).weekday_ceiling)} configured capacity`, 'kpi:sends'],
       ['Human replies', val(f.human_replies_non_ooo), 'Cumulative baseline · excludes out of office', 'kpi:replies'],
-      ['Eligible pipeline', val(d.pipeline?.eligible ?? eligibleLabel), prospect?.kpi || 'Daily target not supplied', prospect ? `bot:${prospect.id}` : 'unknown:pipeline'],
+      ['Prospects loaded today', val(d.pipeline?.eligible ?? eligibleLabel), prospect?.target || prospect?.kpi || 'Daily target not supplied', prospect ? `bot:${prospect.id}` : 'unknown:pipeline'],
       ['Bots running', `${bots.filter(b => b.lifecycle === 'live').length}<small> / ${bots.length}</small>`, `${bots.filter(b => b.lifecycle === 'paused').length} paused · outcomes reviewed separately`, 'fleet-summary']
     ].map(([label,value,note,key]) => `<button class="kpi" data-open="${esc(key)}"><span class="k">${label}</span><span class="v">${value}</span><span class="s">${esc(note)}</span><span class="kpi-arrow">↗</span></button>`).join('');
   }
