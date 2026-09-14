@@ -168,11 +168,11 @@
     const next = d.daily && d.daily.decisions_needed ? d.daily.decisions_needed : [];
 
     const stages = [
+      { label: "Contacted", v: fun.contacted },
+      { label: "Sent", v: fun.emails_sent },
       { label: "Delivered", v: fun.eligible_delivered },
       { label: "Replies", v: fun.human_replies_non_ooo },
-      { label: "Qualified", v: fun.qualified_positive_replies },
-      { label: "Booked", v: fun.booked_held },
-      { label: "Opps", v: fun.opportunities }
+      { label: "Booked", v: fun.booked_held }
     ];
 
     const capRows = [
@@ -182,31 +182,48 @@
     ];
 
     const bnHtml = bn.length
-      ? `<ol class="bn-list">${bn.map((b) => `
+      ? `<ol class="bn-list">${bn.map((b, i) => `
           <li>
-            <span class="pill ${esc(b.type || "ops")}">${esc(b.type || UNKNOWN)}</span>
-            <strong>${esc(b.item || UNKNOWN)}</strong>
+            <span class="rank">${esc(b.rank || i + 1)}</span>
+            <div>
+              <span class="pill ${esc(b.type || "ops")}">${esc(b.type || UNKNOWN)}</span>
+              <strong>${esc(b.item || UNKNOWN)}</strong>
+            </div>
           </li>`).join("")}</ol>`
       : emptyState("No bottlenecks in this snapshot.");
 
+    const bots = d.fleet || [];
+    const pulse = bots.length
+      ? `<div class="pulse" aria-label="Fleet pulse">${bots.map((b) => {
+          const st = fleetState(b);
+          return `<span class="pulse-chip ${st}"><i></i>${esc(b.name || UNKNOWN)}</span>`;
+        }).join("")}</div>`
+      : "";
+
+    const now = next && next[0]
+      ? `<div class="now"><span>Focus now</span><strong>${esc(next[0])}</strong></div>`
+      : "";
+
     return `
       <div class="situation">${esc(ex.situation || day.notes && day.notes[0] || UNKNOWN)}</div>
+      ${now}
+      ${pulse}
       <div class="viz-grid">
         <article class="chart-card">
           <div class="chart-head">
             <h2>Capacity vs scale</h2>
-            <p>Configured ceiling, not sends. Gap ${plain(cap.gap)}/day.</p>
+            <p>Configured ceiling, not today’s sends. ${plain(cap.mailboxes_active)} × ${plain(cap.per_mailbox_day)} = ${plain(cap.weekday_ceiling)}. Gap ${plain(cap.gap)} to ${plain(cap.scale_target_day)}.</p>
           </div>
           <div class="chart-body">
-            ${gauge(cap.weekday_ceiling, cap.scale_target_day, "of 300 target")}
+            ${gauge(cap.weekday_ceiling, cap.scale_target_day, "of target")}
             ${hBars(capRows, cap.scale_target_day)}
           </div>
           ${sourceLine(cap.source)}
         </article>
         <article class="chart-card">
           <div class="chart-head">
-            <h2>Funnel</h2>
-            <p>Control ${plain(fun.control)}. Contacted ${plain(fun.contacted)} · sent ${plain(fun.emails_sent)} are not this ladder.</p>
+            <h2>Pipeline</h2>
+            <p>Control ${plain(fun.control)}. Qualified and opportunities stay unknown — not charted.</p>
           </div>
           ${funnelViz(stages)}
           ${sourceLine(fun.source)}
@@ -263,8 +280,7 @@
         ${sourceLine(fun.source)}
       </article>
       ${filled.length ? `<div class="mini-buckets">${bucketHtml}</div>` : ""}
-      <div class="note-bar">Keep / kill / scale: none — human replies are ${plain(fun.human_replies_non_ooo)}.</div>
-      <p class="lede">${(w.notes || []).map(esc).join(" ")}</p>
+      <p class="lede">${(w.notes || []).map(esc).join(" ")} Keep / kill / scale stay empty until human replies exist (${plain(fun.human_replies_non_ooo)} observed).</p>
       ${sourceLine(w.source || fun.source)}`;
   }
 
@@ -350,7 +366,7 @@
     return `
       <div class="sec">
         <h2>Fleet</h2>
-        <p>${bots.length} bots. Qualification is out of the fleet. Actual stays unknown until a provider read-back.</p>
+        <p>${bots.length} bots. Actual stays unknown until a provider read-back.</p>
       </div>
       <div class="fleet-legend">
         <span><i class="live"></i> Live ${counts.live}</span>
@@ -374,10 +390,13 @@
       <div class="split">
         <article class="list-card">
           <h3>Why it is stuck</h3>
-          <ol class="bn-list">${bn.map((b) => `
+          <ol class="bn-list">${bn.map((b, i) => `
             <li>
-              <span class="pill ${esc(b.type || "ops")}">${esc(b.type || UNKNOWN)}</span>
-              <strong>${esc(b.item || UNKNOWN)}</strong>
+              <span class="rank">${esc(b.rank || i + 1)}</span>
+              <div>
+                <span class="pill ${esc(b.type || "ops")}">${esc(b.type || UNKNOWN)}</span>
+                <strong>${esc(b.item || UNKNOWN)}</strong>
+              </div>
             </li>`).join("")}</ol>
         </article>
         <article class="list-card accent">
@@ -393,7 +412,7 @@
     document.getElementById("footer").innerHTML = `
       <p>${esc(meta.brand || "Orchidea")} · snapshot ${esc(meta.generated_on || UNKNOWN)} · ${esc(meta.timezone || UNKNOWN)} · ${esc(systems.identity || UNKNOWN)} / ${esc(systems.execution || UNKNOWN)} / ${esc(systems.approvals || UNKNOWN)}.</p>
       <p>${(meta.notes || []).map(esc).join(" ")}</p>
-      <p>Analyst overwrites data.js. null is ${UNKNOWN}, never 0. Qualification is deleted from the fleet.</p>`;
+      <p>Analyst overwrites data.js. null is ${UNKNOWN}, never 0.</p>`;
   }
 
   function showTab(name) {
