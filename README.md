@@ -18,15 +18,20 @@ Then open [http://127.0.0.1:43147](http://127.0.0.1:43147).
 
 ## What you should see
 
-Orchidea mark (black quatrefoil) in the header. Sticky strip: **sends today · remaining to today’s capacity · human replies · inboxes (warmup mix)**. Tabs: **Overview | Weekly | Monthly | Fleet | Focus**.
+Orchidea mark in the header. Sticky KPIs: **human replies · remaining today · inboxes**. Tabs: **Board | Fleet | Focus | Radar**. Board has a Today / Week / Month grain so the funnel is not redrawn three times.
+
+Click a KPI, journey step, campaign, bot, bottleneck, or Radar card to open a detail drawer. Live system chips link out to Attio / Salesforge / Warmforge when `meta.links` is set.
 
 | Tab | Reads from | Shows |
 | --- | --- | --- |
-| Overview | `exec`, `inboxes`, `capacity`, `funnel_baseline`, `daily`, `bottlenecks` | Situation, remaining-to-capacity + inbox mix, pipeline x-ray, happening / not, ranked bottlenecks, do next |
-| Weekly | `weekly.insights`, `campaigns[]`, `motion_surface[]`, `funnel_baseline`, `weekly` keep/kill/scale/test | Week takeaways, journey, campaign x-ray, test board. Keep/kill/scale only if they have items |
-| Monthly | `monthly.goals[]`, `monthly.remaining_to_capacity`, `motion_surface[]`, `experiments`, `monthly.insights`, `monthly.next_bets` | Goal tracking (20% growth / keep working free — not ROAS), remaining-to-capacity, test ledger, next bets |
-| Fleet | `fleet[]` | Six bots: job, KPI, actual, working?, live/paused/draft, last outcome. No Qualification |
-| Focus | `bottlenecks[]` (`gap`, `journey`, `unblock`, `test`), `open_items` | Consultative gap cards + do next |
+| Board · Today | `exec`, `funnel_baseline`, `campaigns[]`, `capacity`, `inboxes`, `bottlenecks`, `meta.links` | Briefing, interactive journey x-ray, top gaps, live campaign, remaining-to-capacity, source dock |
+| Board · Week | `weekly.insights`, `campaigns[]`, `motion_surface[]` | Takeaways, campaign x-ray, test surface. Keep/kill/scale only if they have items. No second funnel |
+| Board · Month | `monthly.goals[]`, volume fields, `experiments`, `next_bets` | Offer tracking, month remaining, next bets. Not ROAS |
+| Fleet | `fleet[]` | Six bots. Click a card for KPI / actual / live URL. No Qualification |
+| Focus | `bottlenecks[]`, `open_items` | Full gap cards (once) |
+| Radar | `gtm_radar.items[]` | Experiments other GTM operators are running, with proof charts, source URL, and why-for-us. Research bot overwrites this cluster only |
+
+Hashes: `#board` `#week` `#month` `#fleet` `#focus` `#radar` `#radar/<item-id>`. Old `#daily` / `#weekly` / `#monthly` / `#open` still resolve.
 
 Timezone is always **Africa/Johannesburg**. Commercial offer is one line, not a metric.
 
@@ -57,7 +62,17 @@ Do **not** invent today’s sends, delivered, inbox warmup mix (`inboxes.warmed`
 
 ### Analyst-fillable keys (keep stable)
 
-Existing top-level keys stay: `meta`, `exec`, `goals`, `capacity`, `funnel_baseline`, `fleet`, `paused_routines`, `open_items`, `bottlenecks`, `experiments`, `daily`, `weekly`, `monthly`.
+Existing top-level keys stay: `meta`, `exec`, `goals`, `capacity`, `funnel_baseline`, `fleet`, `paused_routines`, `open_items`, `bottlenecks`, `experiments`, `daily`, `weekly`, `monthly`, `gtm_radar`.
+
+Optional URL fields (omit or `null` — the UI hides the control): `meta.links.{salesforge,attio,notion,warmforge,dashboard}`, `campaigns[].url`, `fleet[].url`, `motion_surface[].url`, `experiments[].url`.
+
+### Research bot (`gtm_radar`)
+
+Overwrite **only** `gtm_radar`. Do not invent Orchidea send/reply metrics here.
+
+Each `items[]` row: `id`, `title`, `published`, `channel` (email|linkedin|video|magnet|cta|ops), `confidence` (benchmark|operator_test|vendor), `status` (watch|try|skip), `summary`, `why_for_us`, `url`, `source_name`, `metric`, `maps_to`, `proof` `{ type: bars|split|compare, caption, rows:[{label,value,hint}] }`.
+
+Label vendor claims as `vendor`. Link the source. Never paste a number that is not in that source.
 
 | Key | Fill when you have a read | Notes |
 | --- | --- | --- |

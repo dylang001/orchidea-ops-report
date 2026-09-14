@@ -4,51 +4,67 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>Orchidea · Outbound &amp; GTM Ops Report</title>
+  <title>Orchidea · Outbound &amp; GTM Ops</title>
   <link rel="icon" href="logo.png" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400..700;1,14..32,400..700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=8" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=11" />
 </head>
-<body class="tab-daily">
-  <div class="chrome">
-    <header class="mast">
-      <div class="mast-inner">
-        <div class="brand">
-          <img class="logo" src="logo.png" width="44" height="44" alt="Orchidea" />
-          <div>
-            <div class="brand-name" id="brand-name">Orchidea</div>
-            <p class="subtitle" id="subtitle">Growth Partner · Outbound &amp; GTM Ops</p>
-          </div>
-        </div>
-        <div class="mast-meta" id="hero-window">
-          <strong>Africa/Johannesburg</strong>
-          <span>as of 2026-09-14</span>
+<body class="tab-board grain-today">
+  <a class="skip" href="#panel-board">Skip to report</a>
+
+  <header class="top">
+    <div class="top-inner">
+      <div class="brand">
+        <img class="logo" src="logo.png" width="40" height="40" alt="" />
+        <div>
+          <div class="brand-name" id="brand-name">Orchidea</div>
+          <p class="subtitle" id="subtitle">Outbound GTM ops</p>
         </div>
       </div>
-    </header>
-    <div class="kpis" id="hero-stats"></div>
-    <nav class="tocnav" aria-label="Report sections">
-      <div class="tocnav-inner">
-        <button type="button" data-tab="daily" aria-selected="true">Overview</button>
-        <button type="button" data-tab="weekly">Weekly</button>
-        <button type="button" data-tab="monthly">Monthly</button>
+      <nav class="tocnav" aria-label="Report sections">
+        <button type="button" data-tab="board" aria-selected="true">Board</button>
         <button type="button" data-tab="fleet">Fleet</button>
-        <button type="button" data-tab="open">Focus</button>
+        <button type="button" data-tab="focus">Focus</button>
+        <button type="button" data-tab="radar">Radar</button>
+      </nav>
+      <div class="mast-meta" id="hero-window">
+        <strong>Africa/Johannesburg</strong>
+        <span>as of —</span>
       </div>
-    </nav>
+    </div>
+  </header>
+
+  <div class="kpi-band">
+    <div class="kpi-band-inner" id="hero-stats"></div>
   </div>
 
   <main class="page">
-    <p class="offer-line" id="offer-copy">Sep 8: 20% revenue growth, or keep working free until hit. No deadline. No ROAS.</p>
-    <section id="panel-daily" class="panel active"></section>
-    <section id="panel-weekly" class="panel"></section>
-    <section id="panel-monthly" class="panel"></section>
-    <section id="panel-fleet" class="panel"></section>
-    <section id="panel-open" class="panel"></section>
+    <section id="panel-board" class="panel active"></section>
+    <section id="panel-fleet" class="panel" hidden></section>
+    <section id="panel-focus" class="panel" hidden></section>
+    <section id="panel-radar" class="panel" hidden></section>
     <footer id="footer"></footer>
   </main>
+
+  <div id="drawer" hidden>
+    <div class="drawer-scrim" data-close-drawer></div>
+    <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
+      <header class="drawer-head">
+        <div>
+          <p class="drawer-kicker" id="drawer-kicker"></p>
+          <h2 id="drawer-title"></h2>
+        </div>
+        <button type="button" class="icon-btn" data-close-drawer aria-label="Close details">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </header>
+      <div class="drawer-body" id="drawer-body"></div>
+    </aside>
+  </div>
 
   <script>
     (function () {
@@ -56,7 +72,7 @@
       data.src = "data.js?t=" + Date.now();
       data.onload = function () {
         var app = document.createElement("script");
-        app.src = "app.js?v=8";
+        app.src = "app.js?v=11";
         document.body.appendChild(app);
       };
       data.onerror = function () {

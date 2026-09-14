@@ -13,7 +13,18 @@
  *
  * Stable top-level keys (keep these; UI reads them):
  *   meta, exec, goals, capacity, funnel_baseline, fleet, paused_routines,
- *   open_items, bottlenecks, experiments, daily, weekly, monthly
+ *   open_items, bottlenecks, experiments, daily, weekly, monthly,
+ *   gtm_radar
+ *
+ * Optional URL fields (omit or null if unknown — UI hides the control):
+ *   meta.links.{salesforge,attio,notion,warmforge,dashboard}
+ *   campaigns[].url   fleet[].url   motion_surface[].url   experiments[].url
+ *
+ * Research bot overwrites gtm_radar only. Outbound Analyst overwrites the rest.
+ *   gtm_radar.items[] fields: id, title, published, channel, confidence
+ *     (benchmark|operator_test|vendor), status (watch|try|skip), summary,
+ *     why_for_us, url, source_name, metric, maps_to, proof
+ *   proof: { type: bars|split|compare, caption, rows:[{label,value,hint}] }
  *
  * Analyst-fillable clusters (added 2026-09-14; seed unknown as null / []):
  *   inboxes              { active, warmed, warming, new, warmup_days, per_mailbox_day, source }
@@ -52,6 +63,13 @@ window.ORCHIDEA_OPS = {
     timezone: "Africa/Johannesburg",
     offer_live: "Sep 8: 20% revenue growth, or keep working free until hit. No deadline. No ROAS.",
     systems: { identity: "Attio", execution: "Salesforge", approvals: "Notion" },
+    links: {
+      salesforge: "https://app.salesforge.ai",
+      attio: "https://app.attio.com",
+      notion: null,
+      warmforge: "https://app.warmforge.ai",
+      dashboard: "https://dylang001.github.io/orchidea-ops-report/"
+    },
     notes: [
       "Contacted != enrolled != sent != delivered != replied.",
       "Configuration is not an outcome.",
@@ -146,6 +164,7 @@ window.ORCHIDEA_OPS = {
       booked: 0,
       bounce: 1,
       insight: "Only observed control. Not replenishment-enabled. Delivered unread, so we cannot split deliverability vs copy. 0 human replies — do not judge messaging yet.",
+      url: "https://app.salesforge.ai",
       source: "Salesforge read-back 2026-09-13"
     }
   ],
@@ -156,28 +175,32 @@ window.ORCHIDEA_OPS = {
       label: "Email outbound",
       kind: "channel",
       status: "live",
-      note: "Only live motion. Control C1-N1 / 48153."
+      note: "Only live motion. Control C1-N1 / 48153.",
+      url: "https://app.salesforge.ai"
     },
     {
       id: "linkedin",
       label: "LinkedIn",
       kind: "channel",
       status: "not_started",
-      note: "LI copy still needs Sep-8 contract cleanup before activate."
+      note: "LI copy still needs Sep-8 contract cleanup before activate.",
+      url: "https://dylang001.github.io/orchidea-ops-report/#radar/radar-multichannel"
     },
     {
       id: "mass_video",
       label: "Mass video",
       kind: "channel",
       status: "not_started",
-      note: "Not started. Untested channel is a bottleneck and an option."
+      note: "Not started. Untested channel is a bottleneck and an option.",
+      url: "https://dylang001.github.io/orchidea-ops-report/#radar/radar-video-sequence"
     },
     {
       id: "lead_magnets",
       label: "Lead magnets",
       kind: "channel",
       status: "not_started",
-      note: "Not started. No magnet in this snapshot."
+      note: "Not started. No magnet in this snapshot.",
+      url: "https://dylang001.github.io/orchidea-ops-report/#radar/radar-lead-magnet-n42k"
     },
     {
       id: "paid_ads",
@@ -205,7 +228,8 @@ window.ORCHIDEA_OPS = {
       label: "Messaging / CTA",
       kind: "lever",
       status: "proposed",
-      note: "EXP-MSG-001 — Sep 8 verbatim + chat CTA. Proposed, not activated."
+      note: "EXP-MSG-001 — Sep 8 verbatim + chat CTA. Proposed, not activated.",
+      url: "https://dylang001.github.io/orchidea-ops-report/#radar/radar-cta-hybrid"
     }
   ],
 
@@ -222,7 +246,8 @@ window.ORCHIDEA_OPS = {
       working: null,
       last_outcome: "queue depth below scale",
       paused_routines: [],
-      status: "queue depth below scale"
+      status: "queue depth below scale",
+      url: null
     },
     {
       name: "Messaging",
@@ -236,7 +261,8 @@ window.ORCHIDEA_OPS = {
       working: null,
       last_outcome: "EXP-MSG-001 proposed, not activated",
       paused_routines: [],
-      status: "EXP-MSG-001 proposed, not activated"
+      status: "EXP-MSG-001 proposed, not activated",
+      url: null
     },
     {
       name: "Campaign Operator",
@@ -250,7 +276,8 @@ window.ORCHIDEA_OPS = {
       working: null,
       last_outcome: "no writes without Dylan change-set",
       paused_routines: [],
-      status: "no writes without Dylan change-set"
+      status: "no writes without Dylan change-set",
+      url: "https://app.salesforge.ai"
     },
     {
       name: "Reply Intelligence",
@@ -264,7 +291,8 @@ window.ORCHIDEA_OPS = {
       working: null,
       last_outcome: "weekday routine paused",
       paused_routines: ["weekday routine"],
-      status: "weekday routine paused"
+      status: "weekday routine paused",
+      url: null
     },
     {
       name: "CRM Data Nerd",
@@ -278,7 +306,8 @@ window.ORCHIDEA_OPS = {
       working: null,
       last_outcome: "weekday routine paused",
       paused_routines: ["weekday routine"],
-      status: "weekday routine paused"
+      status: "weekday routine paused",
+      url: "https://app.attio.com"
     },
     {
       name: "Outbound Analyst",
@@ -292,7 +321,8 @@ window.ORCHIDEA_OPS = {
       working: null,
       last_outcome: "building — first-run pending",
       paused_routines: [],
-      status: "building"
+      status: "building",
+      url: "https://dylang001.github.io/orchidea-ops-report/"
     }
   ],
 
@@ -363,7 +393,8 @@ window.ORCHIDEA_OPS = {
       id: "EXP-MSG-001",
       status: "proposed_not_activated",
       control: "C1-N1/48153",
-      note: "Sep 8 verbatim + chat CTA. Do not activate until human replies exist to judge."
+      note: "Sep 8 verbatim + chat CTA. Do not activate until human replies exist to judge.",
+      url: "https://dylang001.github.io/orchidea-ops-report/#radar/radar-cta-hybrid"
     }
   ],
 
@@ -433,5 +464,196 @@ window.ORCHIDEA_OPS = {
     ],
     notes: ["Conversion visibility and untested channels dominate. Structural 10 × 20 production is known; remaining-to-capacity is not."],
     source: "seed 2026-09-14"
+  },
+
+  gtm_radar: {
+    generated_on: "2026-09-14",
+    timezone: "Africa/Johannesburg",
+    source: "Research seed 2026-09-14. Research bot overwrites gtm_radar only.",
+    items: [
+      {
+        id: "radar-instantly-2026",
+        title: "2026 cold email reply ladder",
+        published: "2026-01-12",
+        channel: "email",
+        confidence: "benchmark",
+        status: "watch",
+        metric: "3.43% avg · 10%+ elite",
+        source_name: "Instantly Cold Email Benchmark Report 2026",
+        url: "https://instantly.ai/cold-email-benchmark-report-2026",
+        maps_to: "funnel:replies",
+        summary: "Platform-wide 2026 benchmark: average reply rate 3.43%, top quartile 5.5%+, elite 10%+. Elite senders keep first-touch under 80 words, one CTA, and A/B test weekly.",
+        why_for_us: "C1-N1 is at 0 human replies on 68 sends. Do not grade copy until delivered is known. The number to watch after Analyst first-run is reply rate vs this ladder, not send ceiling.",
+        proof: {
+          type: "bars",
+          caption: "Reply-rate tiers from Instantly 2026 (Jan 1–Dec 18 2025 data window).",
+          rows: [
+            { label: "Elite / top 10%", value: 10.7, hint: "10.7%+" },
+            { label: "Top quartile", value: 5.5, hint: "5.5%+" },
+            { label: "Average", value: 3.43, hint: "3.43%" },
+            { label: "C1-N1 (this week)", value: 0, hint: "0 / 68 · delivered unknown" }
+          ]
+        }
+      },
+      {
+        id: "radar-followups-58-42",
+        title: "42% of replies arrive after email 1",
+        published: "2026-01-12",
+        channel: "email",
+        confidence: "benchmark",
+        status: "try",
+        metric: "58% step 1 · 42% follow-ups",
+        source_name: "Instantly Cold Email Benchmark Report 2026",
+        url: "https://instantly.ai/cold-email-benchmark-report-2026",
+        maps_to: "motion:email_outbound",
+        summary: "Same Instantly 2026 set: 58% of replies come from the first touch, 42% from later steps. Sweet spot is 4–7 touches; under four leaves replies on the table. Space 3–4 days. Step 2 should feel like a reply, not a reminder (~30% lift in their writeup).",
+        why_for_us: "Before judging EXP-MSG-001, confirm C1-N1 actually has 4–7 value-adding steps. A one-and-done control cannot be compared to this benchmark.",
+        proof: {
+          type: "split",
+          caption: "Share of all replies by sequence step (Instantly 2026).",
+          rows: [
+            { label: "Step 1", value: 58, hint: "sets the ceiling" },
+            { label: "Follow-ups", value: 42, hint: "4–7 touches" }
+          ]
+        }
+      },
+      {
+        id: "radar-ab-before-copy",
+        title: "Don't A/B copy on a blind funnel",
+        published: "2026-01-01",
+        channel: "cta",
+        confidence: "vendor",
+        status: "watch",
+        metric: "~1,500 sends / variant",
+        source_name: "Unify GTM — Cold Email A/B Testing",
+        url: "https://www.unifygtm.com/explore/cold-email-ab-testing",
+        maps_to: "exp:EXP-MSG-001",
+        summary: "Unify's 2026 testing framework: one variable at a time, pre-segment by intent, ~1,500+ sends per variant, hold-out when you want to measure vs doing nothing. Audience quality caps the result more than copy. They cite Instantly 2026 that 42% of replies come from follow-ups.",
+        why_for_us: "EXP-MSG-001 is proposed, not live. Activating a chat-CTA test on 0 human replies and unknown delivered teaches nothing. Unblock delivered first, then test one lever.",
+        proof: {
+          type: "compare",
+          caption: "What a valid copy test needs vs what C1-N1 has today.",
+          rows: [
+            { label: "Sends per variant (Unify)", value: 1500, hint: "minimum cited" },
+            { label: "C1-N1 sent (observed)", value: 68, hint: "control only" },
+            { label: "Human replies", value: 0, hint: "observed zero" }
+          ]
+        }
+      },
+      {
+        id: "radar-cta-hybrid",
+        title: "Question CTA, then meeting ask",
+        published: "2026-05-29",
+        channel: "cta",
+        confidence: "operator_test",
+        status: "try",
+        metric: "9.4% vs 5.2% reply",
+        source_name: "Growtoro — Meeting CTA vs Soft Ask",
+        url: "https://growtoro.com/blog/cold-email-cta-meeting-vs-soft-ask-split-test",
+        maps_to: "exp:EXP-MSG-001",
+        summary: "Controlled split across 80k+ sends, same ICP/opener/body, CTA only. Direct meeting ask: 5.2% reply / 8 meetings per 1k. Soft interest-check: 7.8% / 14. Question with no meeting ask: 9.4% / 16 — but only if the team converts the thread. Hybrid sequence (question → soft → meeting → breakup) hit 31 meetings / 1k on 40k sends. Calendar links in email 1 cut replies ~30%.",
+        why_for_us: "EXP-MSG-001 is Sep 8 verbatim + chat CTA. Chat is closer to a question than a calendar dump — hold that shape. Do not bolt a booking link onto email 1. Reply Intelligence must be unpaused before a question-CTA can convert threads.",
+        proof: {
+          type: "bars",
+          caption: "Reply rate by first-email CTA (Growtoro, 80k+ sends).",
+          rows: [
+            { label: "Question, no meeting", value: 9.4, hint: "51% of replies positive" },
+            { label: "Soft interest-check", value: 7.8, hint: "38% positive" },
+            { label: "Direct meeting + times", value: 5.2, hint: "22% positive" }
+          ]
+        }
+      },
+      {
+        id: "radar-lead-magnet-n42k",
+        title: "Lead magnets reply less, convert better",
+        published: "2026-07-01",
+        channel: "magnet",
+        confidence: "operator_test",
+        status: "watch",
+        metric: "1 positive / 1,041 vs 1,851",
+        source_name: "Calvin Wiltermood — lead magnet vs personalization",
+        url: "https://www.linkedin.com/posts/wiltermood_for-fun-ive-been-testing-lead-magnets-vs-activity-7449917411354427392-tqwd",
+        maps_to: "motion:lead_magnets",
+        summary: "n=42k, US senior sales/leadership at ProServ or SaaS SMBs. Personalization: 2.7% reply, 2% of those positive (1 positive / 1,851). Lead magnet CTA: 1.2% reply, 8% of those positive (1 positive / 1,041). Magnet won on positive-reply efficiency, lost on raw replies. Reddit operators still report magnet-yes then silence unless the next touch is a conversation, not a PDF drop.",
+        why_for_us: "Lead magnets are not_started. If we test one, score it on qualified positives and booked, not reply rate. Pair with Reply Intelligence so a 'send it' reply does not die as a file drop.",
+        proof: {
+          type: "compare",
+          caption: "Emails per positive reply (Wiltermood, n=42k).",
+          rows: [
+            { label: "Personalization", value: 1851, hint: "2.7% reply · 2% positive" },
+            { label: "Lead magnet CTA", value: 1041, hint: "1.2% reply · 8% positive" }
+          ]
+        }
+      },
+      {
+        id: "radar-video-sequence",
+        title: "Video is a step, not a channel swap",
+        published: "2026-01-01",
+        channel: "video",
+        confidence: "vendor",
+        status: "watch",
+        metric: "60–90s · hook A/B",
+        source_name: "Sendspark — AI video personalization for outbound",
+        url: "https://www.sendspark.com/resources/ai-video-personalization-outbound-sales",
+        maps_to: "motion:mass_video",
+        summary: "Vendor playbook, not a third-party benchmark: 60–90 second videos, one CTA, send in business hours, A/B the first 5–10 seconds. They claim 2x LinkedIn reply vs InMail when the file sits in the native thread. Sequence pattern they recommend: video email → text follow-up that references the video → LinkedIn. Score meetings, not views.",
+        why_for_us: "Mass video is not_started. Treat it as a step inside the email sequence after delivered is readable — not a replacement for C1-N1. Do not clone-video blast until inbox warmup mix is known.",
+        proof: {
+          type: "bars",
+          caption: "Vendor-claimed relative lifts vs text email (Sendspark). Not independently audited — confidence = vendor.",
+          rows: [
+            { label: "Reply (claimed)", value: 250, hint: "200–300% vs text" },
+            { label: "Meetings (claimed)", value: 45, hint: "40–50% lift" },
+            { label: "C1-N1 video steps", value: 0, hint: "not started" }
+          ]
+        }
+      },
+      {
+        id: "radar-multichannel",
+        title: "Test email + LinkedIn as one sequence variable",
+        published: "2026-01-01",
+        channel: "linkedin",
+        confidence: "vendor",
+        status: "watch",
+        metric: "Channel mix is a test lever",
+        source_name: "Unify GTM — sequence / follow-up tests",
+        url: "https://www.unifygtm.com/explore/cold-email-ab-testing",
+        maps_to: "motion:linkedin",
+        summary: "Unify lists channel mix (email plus LinkedIn) as a sequence variable to test after subject line, not as a separate 'LinkedIn program' you turn on blindly. Instantly 2026 also maps Mon launch / Wed follow-up / Fri OOO triage — timing is a lever next to channel.",
+        why_for_us: "LinkedIn is not_started because Sep-8 copy still needs cleanup. When it is ready, add it as step 2 of C1-N1 (email first, then LI), not as a parallel blast. That matches the Unify 'one variable' rule.",
+        proof: {
+          type: "bars",
+          caption: "Motion surface right now — live vs not started.",
+          rows: [
+            { label: "Email outbound", value: 100, hint: "live · C1-N1" },
+            { label: "LinkedIn", value: 0, hint: "not started" },
+            { label: "Mass video", value: 0, hint: "not started" },
+            { label: "Lead magnets", value: 0, hint: "not started" }
+          ]
+        }
+      },
+      {
+        id: "radar-bounce-warmup",
+        title: "Bounce under 2%, warmup before volume",
+        published: "2026-01-12",
+        channel: "ops",
+        confidence: "benchmark",
+        status: "try",
+        metric: "<2% bounce · 14-day warmup",
+        source_name: "Instantly Cold Email Benchmark Report 2026",
+        url: "https://instantly.ai/cold-email-benchmark-report-2026",
+        maps_to: "inboxes",
+        summary: "Instantly 2026: keep bounce under 2% or placement drops. New domains start 5–10/day and ramp over 4–6 weeks. Erratic volume looks like spam. We already policy 14-day warmup and 20/mailbox — the missing read is the warmed / warming / new mix.",
+        why_for_us: "C1-N1 has 1 bounce on 68 sends (~1.5%) — inside the band, but delivered is still unknown so placement is not proven. Do not add inboxes to 'fix' zero replies. Fill warmup mix from Warmforge first.",
+        proof: {
+          type: "compare",
+          caption: "Bounce vs Instantly 2026 guardrail.",
+          rows: [
+            { label: "Danger line", value: 2, hint: "2% bounce" },
+            { label: "C1-N1 bounce", value: 1.47, hint: "1 / 68" }
+          ]
+        }
+      }
+    ]
   }
 };
