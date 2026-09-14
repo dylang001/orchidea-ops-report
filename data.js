@@ -23,33 +23,33 @@ window.ORCHIDEA_OPS = {
       "dashboard": "https://dylang001.github.io/orchidea-ops-report/"
     },
     "notes": [
-      "Contacted != enrolled != sent != delivered != replied.",
+      "Contacted != enrolled != sent != replied (Delivered stage removed from funnel UI).",
       "Hero KPI = prospects loaded today (unique emails into campaignable paths), NOT remaining queue depth.",
       "Ecommerce v2 live: 50239 + 50240. SaaS 50289 live. Industry 50383/50385/50387/50388/50392 live (enrolled 88).",
       "Legacy 48153 in-flight only; 50048 completed. 50290 + LI-C1 gated/HOLD.",
-      "v2+SaaS emails.sent cumulative 56 — NOT proven sent-today (mailbox API has no sent-today). daily.sends=null.",
-      "Pipeline: prospects_loaded_today=260 (SoR daily-loaded-prospects.json); remaining ecom depth 7; saas 0; industry null; industry_enrolled 88.",
+      "Emails sent hero = funnel_baseline.emails_sent=56 (SF first-touch primary LIVE: 50239=33+50240=20+50289=3). Industry analytics sent=0 (lag). Legacy 48153=72 lifetime on campaign row only — NOT in hero. daily.sends=null (sent-today N/A mailbox API).",
+      "Pipeline: prospects_loaded_today=260 (SoR daily-loaded-prospects.json); remaining ecom depth 0; saas 0; industry null; industry_enrolled 88.",
       "CO confirmed RI + CRM weekday routines resumed (live)."
     ]
   },
   "exec": {
-    "situation": "Hero: 260 prospects loaded today (unique campaignable). Remaining ecom depth 7 vs 150–200/day. daily.sends unknown. Fleet 6/6 live (RI+CRM resumed). Industry 88 enrolled, analytics sent still 0.",
+    "situation": "Hero: 260 prospects loaded today (unique campaignable). Remaining ecom depth 0 vs 150–200/day. Emails sent first-touch primary=56 (known); industry 0 lag; sent-today N/A. Fleet 6/6 live (RI+CRM resumed). Industry 88 enrolled.",
     "happening": [
       "Prospects loaded today = 260 unique (morning 15 + gap-fill 85 + orphan 64 + SaaS 22 + industry 87 → unique 260) from daily-loaded-prospects.json.",
-      "Ecommerce v2 50239 (active 135) + 50240 (active 133) live; SaaS 50289 live (active 22).",
+      "Ecommerce v2 50239 (active 146) + 50240 (active 137) live; SaaS 50289 live (active 22).",
       "Industry meta 5 live: enrolled 88; analytics sent still 0 (lag after ~17:19Z launch).",
       "Reply Intelligence resumed (primebox-weekday-triage 09:00 JHB): 2 drafts ready / 2 human triaged; 2 Dylan exact-yes pending.",
       "CRM Data Nerd resumed (attio-hygiene-sweep 08:00 JHB): preview-then-apply; Attio match% still null.",
       "Capacity configured 10×20=200; scale target 300 HOLD until queue+sends healthy."
     ],
     "not_happening": [
-      "Sent-today unavailable — do not treat 56 as sent-today (56 = v2+SaaS cumulative emails.sent).",
-      "No qualified positive replies yet (0 / 56 first-touch denom).",
+      "Sent-today unavailable (mailbox API) — separate from known cumulative first-touch 56 on primary lanes.",
+      "No qualified positive replies yet (0 qpos / 56 first-touch denom).",
       "Ecom remaining eligible-queue depth only 7; Prospector filling ecom next.",
       "LI-C1 50224 HOLD; SaaS 50290 gated; industry replenish off until next CS.",
       "Inbox warmup mix unread."
     ],
-    "source": "UX rewrite 2026-09-14 — SoR daily-loaded-prospects.json hero 260; CO RI+CRM resume; mailbox honesty on sends"
+    "source": "UX post-2deea41 2026-09-14 — emails_sent=56 primary first-touch; replies split; Delivered removed; CO override no 128 mix"
   },
   "goals": {
     "year": {
@@ -95,7 +95,7 @@ window.ORCHIDEA_OPS = {
     "gap": 100,
     "remaining_to_capacity": null,
     "source": "Mailbox capacity: 10×20=200 configured; sent-today unavailable so remaining unknown",
-    "eligible_ecom": 7,
+    "eligible_ecom": 0,
     "eligible_saas": 0,
     "eligible_industry": null,
     "industry_enrolled": 88,
@@ -103,10 +103,10 @@ window.ORCHIDEA_OPS = {
   },
   "pipeline": {
     "eligible": 260,
-    "remaining_eligible_depth": 7,
+    "remaining_eligible_depth": 0,
     "target_day": 150,
     "target_day_high": 200,
-    "eligible_ecom_depth": 7,
+    "eligible_ecom_depth": 0,
     "eligible_saas": 0,
     "eligible_industry": null,
     "industry_enrolled": 88,
@@ -119,7 +119,7 @@ window.ORCHIDEA_OPS = {
       "eligible_industry": "null — no standing industry queue file",
       "industry_enrolled": "active-campaigns.json industry_meta_2026_09_14.enrolled_total=88"
     },
-    "note": "Hero is prospects loaded today (write events / unique campaignable) = 260. Remaining ecom queue depth 7 is secondary vs 150–200/day target. Do not hero-split ecom/saas/industry. Industry replenish separate; Prospector filling ecom next."
+    "note": "Hero is prospects loaded today (write events / unique campaignable) = 260. Remaining ecom queue depth 0 is secondary vs 150–200/day target. Do not hero-split ecom/saas/industry. Industry replenish separate; Prospector filling ecom next."
   },
   "inboxes": {
     "active": 10,
@@ -131,12 +131,19 @@ window.ORCHIDEA_OPS = {
     "source": "Mailbox API exposes daily limit only; warmup mix and sent-today unavailable"
   },
   "funnel_baseline": {
-    "control": "50239 + 50240 (ecommerce v2); SaaS 50289 + industry 5 tracked separately",
+    "control": "50239 + 50240 (ecommerce v2) + SaaS 50289 primary first-touch; industry 5 + legacy 48153 tracked separately",
     "contacted": 56,
     "emails_sent": 56,
+    "emails_sent_as_of": "2026-09-14",
+    "emails_sent_source": "SF first-touch on live PRIMARY new lanes only: 50239=33 + 50240=20 + 50289=3 = 56. Industry 50383–50392 analytics sent=0 (enrolled 88; lag). Legacy 48153=72 lifetime NOT included in hero. NOT sent-today.",
     "eligible_delivered": null,
-    "salesforge_replies": 2,
-    "human_replies_non_ooo": 2,
+    "salesforge_replies": 4,
+    "human_replies_non_ooo": 4,
+    "replies_positive": 0,
+    "replies_negative": 0,
+    "replies_wrong_person": 3,
+    "replies_ooo": 3,
+    "replies_not_now": 1,
     "qualified_positive_replies": 0,
     "booked_held": null,
     "opportunities": null,
@@ -144,7 +151,8 @@ window.ORCHIDEA_OPS = {
     "bounce_v2": 1,
     "industry_enrolled": 88,
     "industry_sent": 0,
-    "source": "emails_sent=56 is v2+SaaS cumulative emails.sent (sequences launched today ≈today but NOT proven sent-today). Industry enroll 88 / analytics sent 0 (lag)."
+    "legacy_48153_sent": 72,
+    "source": "emails_sent=56 SF first-touch primary LIVE (50239/50240/50289) — known, not unknown. industry_sent=0 (lag). legacy 48153=72 campaign-only. Replies: Primebox lead_replied non-OOO=4 (Bethany/Karla/Ariel Wrong contact + Ben NOT_NOW); OOO=3; qpos=0. Wrong-person Primebox-level not per-seq SF positiveReplies."
   },
   "campaigns": [
     {
@@ -158,11 +166,13 @@ window.ORCHIDEA_OPS = {
       "replies": 1,
       "booked": null,
       "bounce": 1,
-      "insight": "LIVE ecommerce v2 control. active 135 / total 141. Analytics sends real; test vs 50240 at small n.",
+      "insight": "LIVE ecommerce v2 control. active 146 / total 162. sent 33; replies 1 — RI classified wrong_person (not SF positive). Test vs 50240 at small n.",
       "url": "https://app.salesforge.ai",
       "source": "Prior evening analytics (computedAt ~16:48Z) kept for ecom/SaaS sends; industry enroll from Operator binding + SF enrollment snapshot; sent=0 analytics lag noted",
       "active": 135,
-      "total": 141
+      "total": 141,
+      "positive": 0,
+      "negative": 0
     },
     {
       "id": "50240",
@@ -175,11 +185,13 @@ window.ORCHIDEA_OPS = {
       "replies": 1,
       "booked": null,
       "bounce": 0,
-      "insight": "LIVE ecommerce v2 challenger. active 133 / total 137. Test vs 50239 at small n.",
+      "insight": "LIVE ecommerce v2 challenger. active 137 / total 152. sent 20; replies 1 — RI classified wrong_person (not SF positive). Test vs 50239 at small n.",
       "url": "https://app.salesforge.ai",
       "source": "Prior evening analytics (computedAt ~16:48Z) kept for ecom/SaaS sends; industry enroll from Operator binding + SF enrollment snapshot; sent=0 analytics lag noted",
       "active": 133,
-      "total": 137
+      "total": 137,
+      "positive": 0,
+      "negative": 0
     },
     {
       "id": "50289",
@@ -196,7 +208,9 @@ window.ORCHIDEA_OPS = {
       "url": "https://app.salesforge.ai",
       "source": "Prior evening analytics (computedAt ~16:48Z) kept for ecom/SaaS sends; industry enroll from Operator binding + SF enrollment snapshot; sent=0 analytics lag noted",
       "active": 22,
-      "total": 22
+      "total": 22,
+      "positive": 0,
+      "negative": 0
     },
     {
       "id": "50383",
@@ -215,7 +229,9 @@ window.ORCHIDEA_OPS = {
       "active": 19,
       "total": 19,
       "group": "industry",
-      "enrolled": 19
+      "enrolled": 19,
+      "positive": 0,
+      "negative": 0
     },
     {
       "id": "50385",
@@ -234,7 +250,9 @@ window.ORCHIDEA_OPS = {
       "active": 21,
       "total": 21,
       "group": "industry",
-      "enrolled": 21
+      "enrolled": 21,
+      "positive": 0,
+      "negative": 0
     },
     {
       "id": "50387",
@@ -253,7 +271,9 @@ window.ORCHIDEA_OPS = {
       "active": 21,
       "total": 21,
       "group": "industry",
-      "enrolled": 21
+      "enrolled": 21,
+      "positive": 0,
+      "negative": 0
     },
     {
       "id": "50388",
@@ -272,7 +292,9 @@ window.ORCHIDEA_OPS = {
       "active": 6,
       "total": 6,
       "group": "industry",
-      "enrolled": 6
+      "enrolled": 6,
+      "positive": 0,
+      "negative": 0
     },
     {
       "id": "50392",
@@ -292,7 +314,9 @@ window.ORCHIDEA_OPS = {
       "total": 21,
       "group": "industry",
       "enrolled": 21,
-      "footnote": "companyOutreachLimitEnabled=false"
+      "footnote": "companyOutreachLimitEnabled=false",
+      "positive": 0,
+      "negative": 0
     },
     {
       "id": "48153",
@@ -305,11 +329,13 @@ window.ORCHIDEA_OPS = {
       "replies": 0,
       "booked": null,
       "bounce": 1,
-      "insight": "LIVE legacy in-flight only; no new enrolls. active 10 / total 116 draining.",
+      "insight": "LIVE legacy in-flight only; no new enrolls. active 10 / total 116 draining. sent 72 lifetime — NOT in hero emails_sent (primary first-touch 56).",
       "url": "https://app.salesforge.ai",
       "source": "Prior evening analytics (computedAt ~16:48Z) kept for ecom/SaaS sends; industry enroll from Operator binding + SF enrollment snapshot; sent=0 analytics lag noted",
       "active": 10,
-      "total": 116
+      "total": 116,
+      "positive": 0,
+      "negative": 0
     },
     {
       "id": "50048",
@@ -326,7 +352,9 @@ window.ORCHIDEA_OPS = {
       "url": "https://app.salesforge.ai",
       "source": "Prior evening analytics (computedAt ~16:48Z) kept for ecom/SaaS sends; industry enroll from Operator binding + SF enrollment snapshot; sent=0 analytics lag noted",
       "active": 0,
-      "total": 71
+      "total": 71,
+      "positive": 0,
+      "negative": 0
     },
     {
       "id": "50224",
@@ -343,7 +371,9 @@ window.ORCHIDEA_OPS = {
       "url": "https://app.salesforge.ai",
       "source": "Prior evening analytics (computedAt ~16:48Z) kept for ecom/SaaS sends; industry enroll from Operator binding + SF enrollment snapshot; sent=0 analytics lag noted",
       "active": 0,
-      "total": 0
+      "total": 0,
+      "positive": 0,
+      "negative": 0
     },
     {
       "id": "50290",
@@ -360,7 +390,9 @@ window.ORCHIDEA_OPS = {
       "url": "https://app.salesforge.ai",
       "source": "Prior evening analytics (computedAt ~16:48Z) kept for ecom/SaaS sends; industry enroll from Operator binding + SF enrollment snapshot; sent=0 analytics lag noted",
       "active": 0,
-      "total": 0
+      "total": 0,
+      "positive": 0,
+      "negative": 0
     },
     {
       "id": "50027",
@@ -377,7 +409,9 @@ window.ORCHIDEA_OPS = {
       "url": "https://app.salesforge.ai",
       "source": "Prior evening analytics (computedAt ~16:48Z) kept for ecom/SaaS sends; industry enroll from Operator binding + SF enrollment snapshot; sent=0 analytics lag noted",
       "active": 0,
-      "total": 0
+      "total": 0,
+      "positive": 0,
+      "negative": 0
     }
   ],
   "motion_surface": [
@@ -463,10 +497,10 @@ window.ORCHIDEA_OPS = {
       "kpi": "Prospects loaded today",
       "target": ">=150/day",
       "actual": 260,
-      "gap": "Remaining ecom queue depth 7 vs 150–200/day fill target (hero already 260 unique loaded today)",
+      "gap": "Remaining ecom queue depth 0 vs 150–200/day fill target (hero already 260 unique loaded today)",
       "measurement": "Unique emails loaded into campaignable paths (daily-loaded-prospects.json)",
       "working": true,
-      "last_outcome": "260 unique loaded JHB 2026-09-14; remaining ecom depth 7; Prospector filling ecom next (Apify-free preferred)",
+      "last_outcome": "260 unique loaded JHB 2026-09-14; remaining ecom depth 0; Prospector filling ecom next (Apify-free preferred)",
       "paused_routines": [],
       "status": "live — hero met; refill ecom depth",
       "url": null
@@ -477,16 +511,17 @@ window.ORCHIDEA_OPS = {
       "job": "Copy and experiments",
       "mode": "audit-first",
       "lifecycle": "live",
-      "kpi": "Qualified positive / first-touch sent",
-      "target": "score after n",
-      "actual": "0 / 56",
+      "kpi": "Live experiments · qpos / sends",
+      "target": "qpos rising on live tests",
+      "actual": "exps live 3 · qpos 0 / sends 56 (v2+SaaS first-touch); industry sends 0",
       "gap": "0 qpos",
-      "measurement": "qpos / first-touch_sent (v2+SaaS denom 56); rate not scored at small n",
+      "measurement": "qpos = qualified_positive_replies; denom = emails_sent on ecom v2+SaaS (50239+50240+50289)=56; experiments live: EXP-TACTIC-001-v2, C1-SaaS-50289 A/B, industry 5 pilots",
       "working": true,
-      "last_outcome": "ecom v2 + SaaS 50289 + industry 5 live; qpos 0 at n=56 first-touch",
+      "last_outcome": "exps live: EXP-TACTIC-001-v2, C1-SaaS-50289 A/B, industry 5 pilots; qpos 0 / sends 56 (v2+SaaS first-touch); industry sends 0",
       "paused_routines": [],
       "status": "live tests running; rate not scored at small n",
-      "url": null
+      "url": null,
+      "actual_detail": "exps live: EXP-TACTIC-001-v2, C1-SaaS-50289 A/B, industry 5 pilots; qpos 0; denom first-touch 50239+50240+50289=56; industry analytics sent 0; legacy 48153=72 not in denom"
     },
     {
       "name": "Campaign Operator",
@@ -567,13 +602,13 @@ window.ORCHIDEA_OPS = {
     }
   ],
   "open_items": [
-    "SCALE: Prospector fill ecom remaining depth 7 toward 150–200/day; CO enrolls new ecom only to 50239/50240 50/50.",
+    "SCALE: Prospector fill ecom remaining depth 0 toward 150–200/day; CO enrolls new ecom only to 50239/50240 50/50.",
     "Cuyana WRONG_PERSON: Dylan exact yes to suppress Karla + RESEARCH Wendy (wendy@cuyana.com); Domitilla draft ready, applied=false.",
     "Parachute WRONG_PERSON: Dylan exact yes to suppress Ariel work + RESEARCH Mehdi (mehdi@parachutehome.com); Costa draft ready; do not use ariel.kaye@gmail.com without yes.",
     "Watch industry analytics send lag (88 enrolled, sent still 0).",
     "LI-C1 50224 HOLD until Dylan yes.",
     "SaaS 50290 draft gated.",
-    "Sent-today / remaining-to-capacity unknown — mailbox API has no sent-today field (daily.sends=null; funnel emails_sent=56 cumulative).",
+    "Sent-today N/A (mailbox API) — daily.sends=null; separate from known first-touch emails_sent=56 on primary lanes.",
     "Inbox warmup mix unread.",
     "HOLD mailbox 20→25→30 ramp until queue+sends healthy.",
     "50392 footnote: companyOutreachLimitEnabled=false — Operator confirm vs peers.",
@@ -583,8 +618,8 @@ window.ORCHIDEA_OPS = {
     {
       "rank": 1,
       "type": "supply",
-      "item": "Prospector: load ≥143 more ecom eligible toward 150–200/day (depth 7 left)",
-      "gap": "Remaining ecom eligible-queue depth 7 vs 150–200/day fill target. Hero loaded-today already 260 unique across paths.",
+      "item": "Prospector: load ≥143 more ecom eligible toward 150–200/day (depth 0 left)",
+      "gap": "Remaining ecom eligible-queue depth 0 vs 150–200/day fill target. Hero loaded-today already 260 unique across paths.",
       "journey": "Before Contacted.",
       "unblock": "Owner Prospector — fill ecom next (prefer Google Ads Transparency / Apify-free; Hayley FREE exhausted). Why: Operator cannot enroll what is not in eligible.",
       "test": "Not a copy test — supply fill."
@@ -620,7 +655,7 @@ window.ORCHIDEA_OPS = {
       "rank": 5,
       "type": "structural",
       "item": "HOLD capacity ramp 200→300 until queue+sends healthy",
-      "gap": "Configured ceiling 200; scale target 300; daily.sends null; ecom depth 7.",
+      "gap": "Configured ceiling 200; scale target 300; daily.sends null; ecom depth 0.",
       "journey": "Send capacity.",
       "unblock": "Owner Dylan/CO — HOLD 20→25→30. Why: ramp without queue+proven sends burns warmup.",
       "test": "Scale horizontally only after queue depth + sent-today known."
@@ -670,16 +705,18 @@ window.ORCHIDEA_OPS = {
     "remaining_to_capacity": null,
     "capacity_used": null,
     "anomalies": [
-      "daily.sends=null — mailbox API has no sent-today field. Do not treat 56 as sent-today; 56 = v2+SaaS cumulative emails.sent.",
-      "Hero prospects loaded today = 260 (SoR); remaining ecom eligible depth 7 (secondary) vs 150–200/day.",
-      "Industry analytics sent 0 despite live enroll 88 — provider lag after ~17:19Z launch.",
-      "Small n: 56 v2+SaaS first-touch denom for messaging; do not over-judge copy."
+      "daily.sends=null — sent-today N/A (mailbox API). Hero Emails sent = 56 SF first-touch primary (known). Do not mix legacy 48153=72 into hero. Industry analytics sent=0 (show 0).",
+      "Hero prospects loaded today = 260 (SoR); remaining ecom eligible depth 0 (secondary) vs 150–200/day.",
+      "Industry analytics sent 0 despite live enroll 88 — provider lag after ~17:19Z launch (show 0, not hide).",
+      "Replies split: human_replies_non_ooo=4 (pos 0 · neg 0 · wrong-person 3 · not-now 1); OOO 3 excluded from hero.",
+      "Small n messaging: 56 v2+SaaS first-touch denom; do not over-judge copy."
     ],
     "fleet_blockers_changed": [
       "CO confirmed Reply Intelligence + CRM weekday routines resumed → fleet 6/6 live.",
-      "Hero KPI rewritten: prospects loaded today 260 (not remaining depth 7).",
-      "daily.sends honesty: null (not 56).",
-      "Industry 5 live + enrolled 88; 50239 active 135; 48153 active 10."
+      "Hero KPI rewritten: prospects loaded today 260 (not remaining depth 0).",
+      "daily.sends honesty: null (sent-today N/A); emails_sent=56 primary first-touch known.",
+      "Industry 5 live + enrolled 88; 50239 active 146; 48153 active 10.",
+      "UX post-2deea41: Delivered removed from funnel; Pos/Neg campaign cols; replies split; CO override hero=56 not 128."
     ],
     "reply_intelligence": {
       "outcomes": [
@@ -726,22 +763,23 @@ window.ORCHIDEA_OPS = {
     "notes": [
       "KEEP: v2 + 50289 + industry 5 — proven live motions with real enrollment/send footprint.",
       "KILL: none this week — no motion failed a kill criterion.",
-      "SCALE: Fill ecom eligible toward 150–200/day (now remaining depth 7); Operator enrolls new ecom only to 50239/50240 50/50 — not 48153/50048.",
+      "SCALE: Fill ecom eligible toward 150–200/day (now remaining depth 0); Operator enrolls new ecom only to 50239/50240 50/50 — not 48153/50048.",
       "HOLD: LI-C1 50224 + SaaS 50290 + mailbox 20→25→30 ramp until queue+sends healthy.",
       "RI resumed: 2 drafts ready / 2 human triaged; 2 Dylan exact-yes pending (Cuyana, Parachute).",
       "CRM resumed: Attio match% still null (preview-then-apply).",
-      "Hero: prospects loaded today 260; remaining ecom depth 7 secondary.",
-      "remaining_to_capacity unknown while daily.sends is null."
+      "Hero: prospects loaded today 260; remaining ecom depth 0 secondary.",
+      "remaining_to_capacity unknown while daily.sends is null; emails_sent hero=56 first-touch known."
     ],
     "kpi_proposals": [
       "Prospector: ADD net-adds/day (eligible depth + daily net adds) vs soft_cap path ≥150 Stage-A before weekday send window.",
       "Campaign Operator: CS fidelity + unexpected-pause watch (0 unauthorized SF status mutations; enroll only Dylan-yes destinations).",
-      "Messaging: qpos / first-touch_sent (denom); track 50239 vs 50240 separately; no fake %.",
+      "Messaging: Live experiments · qpos / sends; denom v2+SaaS=56; track 50239 vs 50240; no fake %.",
       "CRM Data Nerd: Attio match% of outbound contacts (preview→apply); leave null until unpaused with real number.",
       "Outbound Analyst: coverage checklist — all live SF ids in active-campaigns.json appear on dash; refresh ≤1h after material Operator launch."
     ],
-    "source": "Analyst P0 industry coverage refresh 2026-09-14 (post-17:19Z launch; no SF re-pull — Operator/Dylan counts + prior evening analytics)",
-    "sends_note": "Do not treat prior 56 as sent-today; 56 = v2+SaaS cumulative emails.sent (sequences launched today so ≈today but not proven sent-today). Mailbox API has no sent-today field."
+    "source": "Analyst UX post-2deea41 2026-09-14 — emails_sent=56 primary; replies split; Delivered removed; CO override",
+    "sends_note": "Sent-today N/A (mailbox API). emails_sent=56 = SF first-touch on live primary lanes 50239+50240+50289 (known). Industry sent=0 (lag). Legacy 48153=72 lifetime on campaign row only — not hero.",
+    "sent_today_note": "N/A — mailbox API"
   },
   "weekly": {
     "label": "Week of 2026-09-08",
@@ -754,23 +792,24 @@ window.ORCHIDEA_OPS = {
       "KILL none this week — no live motion failed a kill criterion; legacy 50048 already completed."
     ],
     "scale": [
-      "SCALE: Fill ecom eligible toward 150–200/day (now remaining depth 7); Operator enrolls new ecom only to 50239/50240 50/50 — not 48153/50048."
+      "SCALE: Fill ecom eligible toward 150–200/day (now remaining depth 0); Operator enrolls new ecom only to 50239/50240 50/50 — not 48153/50048."
     ],
     "test": [
       "TEST 50239 vs 50240 at growing n before copy kill — qpos 0 / 56 is too small to judge."
     ],
     "insights": [
-      "Hero KPI is prospects loaded today = 260 unique (SoR), not remaining ecom depth 7.",
-      "daily.sends=null honesty; funnel emails_sent=56 is v2+SaaS cumulative, not proven sent-today.",
+      "Hero KPI is prospects loaded today = 260 unique (SoR), not remaining ecom depth 0.",
+      "daily.sends=null (sent-today N/A); funnel emails_sent=56 SF first-touch primary (known); industry 0; legacy 72 campaign-only.",
       "Fleet 6/6 live after CO resumed RI (09:00) + CRM (08:00); Alfred reviews still paused.",
       "Binding blockers: refill ecom depth + Dylan exact-yes on 2 RI drafts + HOLD ramp.",
-      "Industry 88 enrolled / analytics sent 0 — watch lag, do not kill pilots on lag."
+      "Industry 88 enrolled / analytics sent 0 — show 0, watch lag, do not kill pilots on lag.",
+      "Replies: 4 human non-OOO (wrong-person 3 · not-now 1 · pos/neg 0); OOO 3 excluded."
     ],
     "notes": [
       "UX rewrite supersedes prior hero=eligible-depth framing and RI/CRM paused state.",
       "Insufficient proven sent-today to judge capacity utilization."
     ],
-    "source": "Analyst UX rewrite 2026-09-14 — SoR hero 260; CO RI+CRM resume; sends honesty"
+    "source": "Analyst UX post-2deea41 2026-09-14 — emails_sent=56; replies split; Delivered out"
   },
   "monthly": {
     "label": "September 2026",
@@ -779,10 +818,11 @@ window.ORCHIDEA_OPS = {
     "sends": 56,
     "capacity_used": null,
     "insights": [
-      "Three live email motions: ecommerce v2 test, SaaS qualified-meetings, industry meta 5 pilots (88 enrolled).",
+      "Three live email motions: ecommerce v2 test, SaaS qualified-meetings, industry meta 5 pilots (88 enrolled) + legacy 48153 draining separately.",
+      "Emails sent first-touch primary 56 (SF analytics known); industry 0; sent-today N/A.",
       "Capacity 200 (10×20) vs scale target 300; remaining-to-capacity unread.",
-      "Pipeline honesty: ecom eligible 7, saas 0, industry null standing queue.",
-      "RI has two WRONG_PERSON/referral decisions awaiting Dylan exact yes."
+      "Pipeline honesty: ecom eligible 0, saas 0, industry null standing queue.",
+      "RI: human_replies_non_ooo=4 (wrong-person 3 + not-now 1); two WRONG_PERSON referrals awaiting Dylan exact yes."
     ],
     "goals": [
       {
@@ -804,7 +844,7 @@ window.ORCHIDEA_OPS = {
     "notes": [
       "Execution + supply dominate. Morning monthly (per-mailbox-day 15 / ceiling 150 / queue4 / legacy 48153-as-control) superseded."
     ],
-    "source": "Analyst P0 industry coverage refresh 2026-09-14 (post-17:19Z launch; no SF re-pull — Operator/Dylan counts + prior evening analytics)"
+    "source": "Analyst UX post-2deea41 2026-09-14 — emails_sent=56 primary; replies split"
   },
   "reply_intelligence": {
     "outcomes": [
@@ -843,7 +883,7 @@ window.ORCHIDEA_OPS = {
     "status": "live — primebox-weekday-triage weekdays 09:00 JHB resumed by CO",
     "weekday_paused": false
   },
-  "publish_note": "UX rewrite 2026-09-14 — hero Prospects loaded today=260 (SoR); daily.sends=null; RI+CRM live 6/6; gtm_radar preserved +3; Desktop ready.",
+  "publish_note": "CO evening49 enroll: 50239 totalLead 162/active 146; 50240 totalLead 152/active 137; eligible-queue depth 0. Sends analytics unchanged until SF recompute. UX2: hero Emails sent=56 known; Delivered removed; reply split; queue depth 0.",
   "gtm_radar": {
     "generated_on": "2026-09-14",
     "timezone": "Africa/Johannesburg",

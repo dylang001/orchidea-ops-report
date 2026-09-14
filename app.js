@@ -56,6 +56,14 @@
     };
   }
 
+  function sentTodayDisplay(d) {
+    const day = d.daily || {};
+    if (isMissing(day.sends)) {
+      return day.sent_today_note || 'N/A — mailbox API';
+    }
+    return null; // numeric path uses val/valBtn
+  }
+
   function remainingToday(d) {
     const day = d.daily || {};
     if (!isMissing(day.remaining_to_capacity)) return day.remaining_to_capacity;
@@ -72,10 +80,9 @@
 
   function journeyStages(fun) {
     return [
-      { key: "contacted", label: "Contacted", v: fun.contacted, def: "People who entered the control. Not the same as enrolled, sent, or delivered." },
-      { key: "sent", label: "Sent", v: fun.emails_sent, def: "Messages Salesforge attempted. Includes bounces until delivered is read." },
-      { key: "delivered", label: "Delivered", v: fun.eligible_delivered, def: "Eligible delivered. Until this is numeric we cannot split deliverability from copy." },
-      { key: "replies", label: "Replies", v: fun.human_replies_non_ooo, def: "Human replies, OOO stripped. Observed zero is not unknown." },
+      { key: "contacted", label: "Contacted", v: fun.contacted, def: "People who entered the control. Not the same as enrolled, sent, or replied." },
+      { key: "sent", label: "Sent", v: fun.emails_sent, def: "SF first-touch on live primary lanes (emails_sent). Known cumulative — not sent-today. Industry and legacy tracked separately." },
+      { key: "replies", label: "Replies", v: fun.human_replies_non_ooo, def: "Human replies, OOO stripped. Split: pos/neg/wrong-person/not-now in detail. Observed zero is not unknown." },
       { key: "booked", label: "Booked", v: fun.booked_held, def: "Held meetings. Downstream of a human reply." }
     ];
   }
@@ -170,7 +177,7 @@
       <div class="battery ${unknown ? "is-unknown" : ""}" aria-hidden="true">
         ${unknown ? "" : `<i class="used" style="width:${usedPct}%"></i><i class="left" style="width:${leftPct}%"></i>`}
       </div>
-      <div class="metric-row"><span>Sent today</span><b>${valBtn(day.sends, "kpi:sends")}</b></div>
+      <div class="metric-row"><span>Sent today</span><b>${isMissing(day.sends) ? esc(day.sent_today_note || 'N/A — mailbox API') : valBtn(day.sends, "kpi:sends")}</b></div>
       <div class="metric-row"><span>Remaining</span><b>${valBtn(rem, "kpi:remaining")}</b></div>
       <div class="metric-row"><span>Weekday production</span><b>${plain(ib.active)} × ${plain(ib.per_mailbox_day)} = ${plain(cap.weekday_ceiling)}</b></div>
       <div class="metric-row"><span>Warmup mix</span><b>${mixUnknown ? valBtn(null, "kpi:inboxes") : `warmed ${plain(ib.warmed)} · warming ${plain(ib.warming)} · new ${plain(ib.new)}`}</b></div>
@@ -187,9 +194,9 @@
         <div class="camp-metrics">
           <div><span>Contacted</span><b>${val(c.contacted)}</b></div>
           <div><span>Sent</span><b>${val(c.sent)}</b></div>
-          <div><span>Delivered</span><b>${val(c.delivered)}</b></div>
           <div><span>Replies</span><b>${val(c.replies)}</b></div>
-          <div><span>Booked</span><b>${val(c.booked)}</b></div>
+          <div><span>Pos</span><b>${val(c.positive)}</b></div>
+          <div><span>Neg</span><b>${val(c.negative)}</b></div>
           <div><span>Bounce</span><b>${val(c.bounce)}</b></div>
         </div>
         ${compact ? "" : `<p style="margin:0;font-size:13px;color:var(--muted)">${esc(c.insight || "")}</p>`}
@@ -249,9 +256,11 @@
     document.getElementById('brand-name').textContent = '';
     document.getElementById('subtitle').textContent = 'Daily brief';
     document.getElementById('hero-window').innerHTML = `<strong><span class="fresh-dot ${date !== today ? 'stale' : ''}"></span> Snapshot ${esc(date || UNKNOWN)}</strong><span>${date === today ? 'Today’s snapshot' : 'Check snapshot freshness'} · ${esc(meta.timezone || UNKNOWN)}</span>`;
+    const emailsSent = f.emails_sent;
+    const replySplit = `pos ${plain(f.replies_positive ?? 0)} · neg ${plain(f.replies_negative ?? 0)} · wrong-person ${plain(f.replies_wrong_person ?? 0)} · not-now ${plain(f.replies_not_now ?? 0)} (OOO excluded)`;
     document.getElementById('hero-stats').innerHTML = [
-      ['Today’s sends', val(day.sends), `of ${plain((d.capacity || {}).weekday_ceiling)} configured capacity`, 'kpi:sends'],
-      ['Human replies', val(f.human_replies_non_ooo), 'Cumulative baseline · excludes out of office', 'kpi:replies'],
+      ['Emails sent', val(emailsSent), 'SF first-touch on live primary lanes (50239/50240/50289) · industry 0 (lag) · sent-today N/A', 'kpi:sends'],
+      ['Human replies', val(f.human_replies_non_ooo), replySplit, 'kpi:replies'],
       ['Prospects loaded today', val(d.pipeline?.eligible ?? eligibleLabel), prospect?.target || prospect?.kpi || 'Daily target not supplied', prospect ? `bot:${prospect.id}` : 'unknown:pipeline'],
       ['Bots running', `${bots.filter(b => b.lifecycle === 'live').length}<small> / ${bots.length}</small>`, `${bots.filter(b => b.lifecycle === 'paused').length} paused · outcomes reviewed separately`, 'fleet-summary']
     ].map(([label,value,note,key]) => `<button class="kpi" data-open="${esc(key)}"><span class="k">${label}</span><span class="v">${value}</span><span class="s">${esc(note)}</span><span class="kpi-arrow">↗</span></button>`).join('');
@@ -264,7 +273,7 @@
     return `<article class="tile portfolio span-12">
       <div class="section-heading"><div><p class="tile-kicker">Campaign portfolio</p><h2>Every campaign. One view.</h2><p class="lede">Latest observed totals, not today’s sends. Open a campaign for evidence.</p></div><span class="count-label">${all.length} campaigns</span></div>
       <div class="portfolio-tools"><div class="status-filters" aria-label="Filter campaigns">${statuses.map(st => `<button data-campaign-filter="${esc(st)}" aria-pressed="${campaignFilter === st}">${esc(st === 'all' ? 'All campaigns' : st)} <span>${st === 'all' ? all.length : all.filter(c => c.status === st).length}</span></button>`).join('')}</div><label class="campaign-search">Search<input type="search" id="campaign-search" placeholder="Name, ID or channel" value="${esc(campaignSearch)}"></label></div>
-      <div class="table-scroll" tabindex="0" role="region" aria-label="Campaign performance"><table class="campaign-table"><thead><tr><th scope="col">Campaign</th><th scope="col">Status</th><th scope="col">Sent</th><th scope="col">Delivered</th><th scope="col">Replies</th><th scope="col">Booked</th><th scope="col">Bounces</th><th scope="col">Readout</th></tr></thead><tbody>${shown.map(c => `<tr><th scope="row"><button data-open="campaign:${esc(c.id)}" class="campaign-name">${esc(c.name)} <span>↗</span></button><small>${esc(c.channel)} · ${esc(c.id)}</small></th><td><span class="status-tag ${esc(c.status)}">${esc(c.status)}</span></td>${['sent','delivered','replies','booked','bounce'].map(k => `<td>${isMissing(c[k]) ? '<span class="data-dash" title="Not measured in this snapshot">—</span>' : val(c[k])}</td>`).join('')}<td><span class="readout ${c.status === 'live' && c.sent === 0 ? 'attention' : ''}">${c.status === 'live' ? c.sent === 0 ? 'No sends observed' : 'View results' : c.status === 'completed' ? 'Completed' : c.status === 'paused' ? 'Paused' : 'Not activated'}</span></td></tr>`).join('') || '<tr><td colspan="8" class="empty">No campaigns match these filters.</td></tr>'}</tbody></table></div>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Campaign performance"><table class="campaign-table"><thead><tr><th scope="col">Campaign</th><th scope="col">Status</th><th scope="col">Sent</th><th scope="col">Replies</th><th scope="col">Pos</th><th scope="col">Neg</th><th scope="col">Bounces</th><th scope="col">Readout</th></tr></thead><tbody>${shown.map(c => `<tr><th scope="row"><button data-open="campaign:${esc(c.id)}" class="campaign-name">${esc(c.name)} <span>↗</span></button><small>${esc(c.channel)} · ${esc(c.id)}</small></th><td><span class="status-tag ${esc(c.status)}">${esc(c.status)}</span></td>${['sent','replies','positive','negative','bounce'].map(k => `<td>${isMissing(c[k]) ? '<span class="data-dash" title="Not measured in this snapshot">—</span>' : val(c[k])}</td>`).join('')}<td><span class="readout ${c.status === 'live' && c.sent === 0 ? 'attention' : ''}">${c.status === 'live' ? c.sent === 0 ? 'No sends observed' : 'View results' : c.status === 'completed' ? 'Completed' : c.status === 'paused' ? 'Paused' : 'Not activated'}</span></td></tr>`).join('') || '<tr><td colspan="8" class="empty">No campaigns match these filters.</td></tr>'}</tbody></table></div>
       <div class="table-note"><span>— Not measured · 0 Observed zero · Live is the recorded activation state</span>${ext(linksOf(d).salesforge, 'Open Salesforge')}</div>
     </article>`;
   }
@@ -285,10 +294,10 @@
     return `<section class="executive-summary"><div><p class="tile-kicker">Your operating picture</p><h1>${bn.length ? 'Unblock today.<br>Build tomorrow.' : 'Your daily operating review.'}</h1><p>${bn.length ? esc(bn[0].item) + '. ' + esc(bn[0].unblock || '') : 'Review the latest results, campaign activity and next decisions.'}</p><button class="primary-button" data-tab-jump="focus">Review ${bn.length} priorities <span>↗</span></button></div><aside class="briefing-note"><span class="note-heading">Latest analyst briefing</span><p>${esc(ex.situation || 'No briefing supplied.')}</p><details><summary>What changed & evidence</summary><ul>${(ex.happening || []).map(x => `<li>${esc(x)}</li>`).join('')}</ul>${sourceLine(ex.source)}</details></aside></section>
       <div class="bento">
         ${campaignPortfolio(d)}
-        <article class="tile span-8"><div class="section-heading"><div><p class="tile-kicker">Outbound results</p><h2>Where visibility breaks</h2><p class="lede">Cumulative baseline. People and messages are different units.</p></div><span class="status-tag draft">Baseline</span></div>${funnelViz(d)}<p class="data-note">Delivery and qualification must be measured before judging copy or calculating a reply conversion rate.</p></article>
-        <article class="tile span-4"><p class="tile-kicker">Production readiness</p><h2>Capacity to grow</h2><div class="capacity-display"><strong>${val(cap.weekday_ceiling)}</strong><span>/ ${plain(cap.scale_target_day)}<br>target sends per weekday</span></div><div class="capacity-scale ${capPct === null ? 'unknown-track' : ''}">${capPct === null ? '' : `<i style="width:${capPct}%"></i>`}</div><div class="metric-row"><span>Sent today</span><b>${valBtn(d.daily?.sends,'kpi:sends')}</b></div><div class="metric-row"><span>Remaining today</span><b>${valBtn(remainingToday(d),'kpi:remaining')}</b></div><div class="metric-row"><span>Inbox warmup mix</span><b>${valBtn(inboxesOf(d).warmed,'kpi:inboxes')}</b></div><p class="src">Configured capacity, not achieved output. ${esc(cap.source || '')}</p></article>
+        <article class="tile span-8"><div class="section-heading"><div><p class="tile-kicker">Outbound results</p><h2>Where visibility breaks</h2><p class="lede">Cumulative baseline. People and messages are different units.</p></div><span class="status-tag draft">Baseline</span></div>${funnelViz(d)}<p class="data-note">Qualification and reply split must be measured before judging copy or calculating a reply conversion rate.</p></article>
+        <article class="tile span-4"><p class="tile-kicker">Production readiness</p><h2>Capacity to grow</h2><div class="capacity-display"><strong>${val(cap.weekday_ceiling)}</strong><span>/ ${plain(cap.scale_target_day)}<br>target sends per weekday</span></div><div class="capacity-scale ${capPct === null ? 'unknown-track' : ''}">${capPct === null ? '' : `<i style="width:${capPct}%"></i>`}</div><div class="metric-row"><span>Sent today</span><b>${isMissing(d.daily?.sends) ? esc(d.daily?.sent_today_note || 'N/A — mailbox API') : valBtn(d.daily?.sends,'kpi:sends')}</b></div><div class="metric-row"><span>Remaining today</span><b>${valBtn(remainingToday(d),'kpi:remaining')}</b></div><div class="metric-row"><span>Inbox warmup mix</span><b>${valBtn(inboxesOf(d).warmed,'kpi:inboxes')}</b></div><p class="src">Configured capacity, not achieved output. ${esc(cap.source || '')}</p></article>
         ${fleetSummary(d)}
-        <article class="tile span-4"><p class="tile-kicker">Reporting coverage</p><h2>What we can’t judge yet</h2><div class="coverage-list">${[['Daily delivery',d.daily?.delivered],['Qualified replies',d.funnel_baseline?.qualified_positive_replies],['Meetings held',d.funnel_baseline?.booked_held],['Reviews completed',d.daily?.reviews_completed]].map(([label,v]) => `<div><span>${label}</span><b>${isMissing(v) ? 'Not measured' : val(v)}</b></div>`).join('')}</div><p class="data-note">The next analyst refresh needs these outcomes to close the daily review.</p></article>
+        <article class="tile span-4"><p class="tile-kicker">Reporting coverage</p><h2>What we can’t judge yet</h2><div class="coverage-list">${[['Industry sent (analytics)',d.funnel_baseline?.industry_sent],['Qualified replies',d.funnel_baseline?.qualified_positive_replies],['Meetings held',d.funnel_baseline?.booked_held],['Reviews completed',d.daily?.reviews_completed]].map(([label,v]) => `<div><span>${label}</span><b>${isMissing(v) ? 'Not measured' : val(v)}</b></div>`).join('')}</div><p class="data-note">The next analyst refresh needs these outcomes to close the daily review.</p></article>
         <article class="tile span-8"><p class="tile-kicker">Experiment agenda</p><h2>What to test next</h2><p class="lede">Recorded experiments and their current gates. Resolve execution gaps before interpreting results.</p>${experimentList(d)}</article>
         <article class="tile span-4"><p class="tile-kicker">Decisions for you</p><h2>Clear the next step</h2>${(d.daily?.decisions_needed || []).map((x,i) => `<button class="decision-link" data-open="decision:${i}"><span>${esc(x)}</span><span>↗</span></button>`).join('') || emptyState('No decisions recorded.')}<div class="src-dock">${ext(linksOf(d).attio,'Attio')}${ext(linksOf(d).notion,'Notion')}</div></article>
       </div>`;
@@ -498,20 +507,26 @@
     }
     if (kind === "kpi" && id === "replies") {
       openDrawer("Headline KPI", "Human replies", `
-        <p>This is the conversion question. The cumulative human reply baseline is separate from campaign-level provider replies. Qualified positive remains unread.</p>
+        <p>Human replies (non-OOO) from Primebox lead_replied. OOO excluded. Campaign-level SF positiveReplies are separate (currently 0).</p>
         <div class="metric-row"><span>Human replies (non-OOO)</span><b>${val(fun.human_replies_non_ooo)}</b></div>
+        <div class="metric-row"><span>Positive</span><b>${val(fun.replies_positive)}</b></div>
+        <div class="metric-row"><span>Negative</span><b>${val(fun.replies_negative)}</b></div>
+        <div class="metric-row"><span>Wrong person</span><b>${val(fun.replies_wrong_person)}</b></div>
+        <div class="metric-row"><span>Not now</span><b>${val(fun.replies_not_now)}</b></div>
+        <div class="metric-row"><span>OOO (excluded)</span><b>${val(fun.replies_ooo)}</b></div>
         <div class="metric-row"><span>Qualified positive</span><b>${val(fun.qualified_positive_replies)}</b></div>
         ${sourceLine(fun.source)}
-        <p>Do not activate EXP-MSG-001 on zero replies while delivered is unknown. Delivery is needed to interpret a reply rate.</p>
+        <p>Do not activate EXP-MSG-001 on zero qualified positives at small n. Wrong-person is not positive.</p>
         ${ext(L.salesforge, "Open Salesforge")}
         ${ext("#radar/radar-instantly-2026", "See the 2026 reply ladder")}`);
       return;
     }
     if (kind === "kpi" && id === "remaining") {
       openDrawer("Operating number", "Remaining to today’s capacity", `
-        <p>Remaining = weekday production − sends today. Both must be numeric. A missing Salesforge read stays ${UNKNOWN}, never 0.</p>
-        <div class="metric-row"><span>Sends today</span><b>${val(day.sends)}</b></div>
-        <div class="metric-row"><span>Delivered today</span><b>${val(day.delivered)}</b></div>
+        <p>Remaining = weekday production − sends today. Sent-today is N/A from mailbox API; cumulative first-touch emails_sent is separate and known.</p>
+        <div class="metric-row"><span>Sent today</span><b>${isMissing(day.sends) ? esc(day.sent_today_note || 'N/A — mailbox API') : val(day.sends)}</b></div>
+        <div class="metric-row"><span>Emails sent (first-touch primary)</span><b>${val(fun.emails_sent)}</b></div>
+        <div class="metric-row"><span>Industry sent (analytics)</span><b>${val(fun.industry_sent)}</b></div>
         <div class="metric-row"><span>Remaining</span><b>${val(remainingToday(d))}</b></div>
         <div class="metric-row"><span>Weekday production</span><b>${plain(cap.weekday_ceiling)}</b></div>
         <p>The 200 ceiling is how capacity is made (${plain(ib.active)} × ${plain(ib.per_mailbox_day)}). It is not the headline.</p>
@@ -532,7 +547,14 @@
       return;
     }
     if (kind === "kpi" && id === "sends") {
-      inspect("kpi:remaining", d);
+      openDrawer("Headline KPI", "Emails sent", `
+        <p>SF first-touch on live primary lanes (50239 / 50240 / 50289). This is known cumulative analytics — not sent-today. Industry shows 0 (lag). Legacy 48153 lifetime stays on the campaign row only.</p>
+        <div class="metric-row"><span>Emails sent (primary first-touch)</span><b>${val(fun.emails_sent)}</b></div>
+        <div class="metric-row"><span>Industry sent (analytics)</span><b>${val(fun.industry_sent)}</b></div>
+        <div class="metric-row"><span>Legacy 48153 (campaign only)</span><b>${val(fun.legacy_48153_sent)}</b></div>
+        <div class="metric-row"><span>Sent today</span><b>${isMissing(day.sends) ? esc(day.sent_today_note || 'N/A — mailbox API') : val(day.sends)}</b></div>
+        ${sourceLine(fun.emails_sent_source || fun.source)}
+        ${ext(L.salesforge, "Open Salesforge")}`);
       return;
     }
 
@@ -544,10 +566,16 @@
         <div class="metric-row"><span>Value</span><b>${val(s.v)}</b></div>
         <div class="metric-row"><span>Control</span><b>${esc(fun.control || UNKNOWN)}</b></div>
         ${sourceLine(fun.source)}
-        <p>Contacted ≠ enrolled ≠ sent ≠ delivered ≠ replied.</p>
+        ${id === "replies" ? `
+        <div class="metric-row"><span>Positive</span><b>${val(fun.replies_positive)}</b></div>
+        <div class="metric-row"><span>Negative</span><b>${val(fun.replies_negative)}</b></div>
+        <div class="metric-row"><span>Wrong person</span><b>${val(fun.replies_wrong_person)}</b></div>
+        <div class="metric-row"><span>Not now</span><b>${val(fun.replies_not_now)}</b></div>
+        <div class="metric-row"><span>OOO (excluded)</span><b>${val(fun.replies_ooo)}</b></div>
+        <div class="metric-row"><span>Qualified positive</span><b>${val(fun.qualified_positive_replies)}</b></div>` : ""}
+        <p>Contacted ≠ enrolled ≠ sent ≠ replied.</p>
         ${ext(L.salesforge, "Open Salesforge")}
-        ${id === "replies" ? ext("#radar/radar-instantly-2026", "Benchmark reply ladder") : ""}
-        ${id === "delivered" ? ext("#radar/radar-bounce-warmup", "Deliverability Radar") : ""}`);
+        ${id === "replies" ? ext("#radar/radar-instantly-2026", "Benchmark reply ladder") : ""}`);
       return;
     }
 
@@ -558,9 +586,9 @@
         <div class="camp-metrics">
           <div><span>Contacted</span><b>${val(c.contacted)}</b></div>
           <div><span>Sent</span><b>${val(c.sent)}</b></div>
-          <div><span>Delivered</span><b>${val(c.delivered)}</b></div>
           <div><span>Replies</span><b>${val(c.replies)}</b></div>
-          <div><span>Booked</span><b>${val(c.booked)}</b></div>
+          <div><span>Pos</span><b>${val(c.positive)}</b></div>
+          <div><span>Neg</span><b>${val(c.negative)}</b></div>
           <div><span>Bounce</span><b>${val(c.bounce)}</b></div>
         </div>
         <p>${esc(c.insight || "")}</p>
@@ -641,7 +669,7 @@
       openDrawer("Unknown ≠ 0", "Why this is blank", `
         <p><b>null</b> means the provider was not read, or the field is not known. This metric has not been measured in the snapshot.</p>
         <p><b>0</b> means we observed zero, as distinct from an unread field.</p>
-        <p>Never coerce a missing Salesforge / Attio / Notion read to 0. Analyst first-run is what fills today’s sends, remaining, delivered, and inbox mix.</p>`);
+        <p>Never coerce a missing Salesforge / Attio / Notion read to 0. Analyst first-run is what fills sent-today, remaining, and inbox mix. Emails sent (first-touch) is cumulative analytics.</p>`);
     }
   }
 
