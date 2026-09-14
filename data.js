@@ -1,6 +1,6 @@
 /**
  * Orchidea Outbound / GTM Ops · living snapshot.
- * Analyst refresh 2026-09-14 ~15:57 JHB off CO+SF verify.
+ * Analyst refresh 2026-09-14 evening JHB.
  */
 window.ORCHIDEA_OPS = {
   "meta": {
@@ -9,7 +9,7 @@ window.ORCHIDEA_OPS = {
     "title": "Outbound & GTM Ops Report",
     "generated_on": "2026-09-14",
     "timezone": "Africa/Johannesburg",
-    "offer_live": "Ecommerce v2: \u226520% better return / 90d or work free. SaaS 50289: more qualified meetings from paid in 90d (A work-free / B waive next month).",
+    "offer_live": "Ecommerce live Sep 8: 20% revenue growth OR work free (not ROAS). SaaS 50289: qualified meetings offer.",
     "systems": {
       "identity": "Attio",
       "execution": "Salesforge",
@@ -24,27 +24,28 @@ window.ORCHIDEA_OPS = {
     },
     "notes": [
       "Contacted != enrolled != sent != delivered != replied.",
-      "Ecommerce NEW enrolls 50/50 \u2192 50239 + 50240.",
-      "Legacy 48153 in-flight only (~12 active). Legacy 50048 COMPLETED after uncontacted backfill.",
-      "SaaS 50289 LIVE (meetings offer). 50290 + LI-C1 still gated."
+      "Ecommerce v2 live since Sep 8: 50239 + 50240.",
+      "Legacy 48153 remains in-flight only; 50048 is completed.",
+      "SaaS 50289 LIVE with qualified-meetings offer; 50290 + LI-C1 remain gated.",
+      "Evening analytics refresh: 56 v2+SaaS emails sent; mailbox API has no sent-today field."
     ]
   },
   "exec": {
-    "situation": "Operator moved 99 uncontacted onto v2 (50/49). Live ecom: 50239 active 139 / total 141; 50240 active 134 / total 137 \u2014 emails_sent still 0 (watch NY 11\u201317). SaaS 50289 live with 22 enrolled. Queue 7. Capacity 200. Pages data.js still needs publish.",
+    "situation": "Sends live. 56 on v2+SaaS. 2 human replies both WRONG_PERSON/referral. Capacity 200. Queue thin.",
     "happening": [
-      "Ecommerce cutover LIVE: 50239 + 50240 after Dylan backfill of 99 uncontacted.",
-      "SaaS C1 Growth Leaders 50289 LIVE (22 enrolled, meetings A/B).",
-      "Legacy 50048 marked completed (0 active).",
-      "Capacity 10\u00d720=200; Prospector queue eligible=7."
+      "Ecommerce v2 50239 + 50240 are live and have 53 sends.",
+      "SaaS 50289 is live with the qualified-meetings offer and 3 sends.",
+      "Two human replies were triaged as WRONG_PERSON/referral; two drafts are ready.",
+      "Capacity is 10×20=200; scale target is 300, gap 100."
     ],
     "not_happening": [
-      "v2 emails_sent still 0 despite 273 active on ecom v2 \u2014 enrolled\u2260sent.",
-      "LI-C1 50224 still draft.",
-      "SaaS 50290 still draft gated.",
-      "Sent-today / remaining-to-capacity unknown.",
-      "Inbox warmup mix unread."
+      "No qualified positive replies yet (0).",
+      "No KILL decision; queue remains thin.",
+      "LI-C1 50224 is on HOLD and SaaS 50290 remains gated.",
+      "Sent-today / remaining-to-capacity is unknown because the mailbox API does not expose it.",
+      "Inbox warmup mix remains unread."
     ],
-    "source": "Salesforge get_sequence verify + Campaign Operator 2026-09-14 ~13:56Z"
+    "source": "Analyst evening refresh 2026-09-14 from supplied refresh JSON and ops context"
   },
   "goals": {
     "year": {
@@ -59,7 +60,7 @@ window.ORCHIDEA_OPS = {
       "status": "Get v2 + SaaS actually sending; refill queue; then judge copy.",
       "items": [
         "Confirm sends in NY window.",
-        "Fill queue toward 150\u2013200/day.",
+        "Fill queue toward 150–200/day.",
         "HOLD LI + 50290 + inbox ramp."
       ]
     },
@@ -86,8 +87,10 @@ window.ORCHIDEA_OPS = {
     "weekday_ceiling": 200,
     "usable_after_reserve": 160,
     "scale_target_day": 300,
+    "scale_target": 300,
     "gap": 100,
-    "source": "Salesforge list_mailboxes \u00b7 10\u00d720"
+    "remaining_to_capacity": null,
+    "source": "Mailbox capacity: 10×20; sent-today unavailable"
   },
   "inboxes": {
     "active": 10,
@@ -96,20 +99,21 @@ window.ORCHIDEA_OPS = {
     "new": null,
     "warmup_days": 14,
     "per_mailbox_day": 20,
-    "source": "warmup mix unread"
+    "source": "Mailbox API exposes daily limit only; warmup mix and sent-today unavailable"
   },
   "funnel_baseline": {
-    "control": "C1-N1-v2 / 50239 + EXP-TACTIC-001-v2 / 50240",
-    "contacted": 41,
-    "emails_sent": 68,
+    "control": "50239 + 50240 (ecommerce v2); SaaS 50289 tracked separately",
+    "contacted": 56,
+    "emails_sent": 56,
     "eligible_delivered": null,
-    "salesforge_replies": 0,
-    "human_replies_non_ooo": 1,
-    "qualified_positive_replies": null,
+    "salesforge_replies": 2,
+    "human_replies_non_ooo": 2,
+    "qualified_positive_replies": 0,
     "booked_held": null,
     "opportunities": null,
     "bounce": 1,
-    "source": "Legacy 48153 cumulative send stats; v2/SaaS emails_sent still 0 on get_sequence analytics"
+    "bounce_v2": 1,
+    "source": "Evening analytics emails.sent: v2 50239+50240 and SaaS 50289"
   },
   "campaigns": [
     {
@@ -117,60 +121,68 @@ window.ORCHIDEA_OPS = {
       "name": "C1-N1-v2",
       "status": "live",
       "channel": "email",
-      "contacted": 0,
-      "sent": 0,
+      "contacted": 33,
+      "sent": 33,
       "delivered": null,
-      "replies": 0,
+      "replies": 1,
       "booked": null,
-      "bounce": 0,
-      "insight": "LIVE ecom control. activeEnrollment 139 / totalLead 141. emails_sent 0. 50/50 new enrolls with 50240.",
+      "bounce": 1,
+      "insight": "LIVE ecommerce v2 control. Analytics sends are real; test against 50240 at small n.",
       "url": "https://app.salesforge.ai",
-      "source": "get_sequence 2026-09-14"
+      "source": "Evening refresh analytics/enrollment JSON",
+      "active": 136,
+      "total": 141
     },
     {
       "id": "50240",
       "name": "EXP-TACTIC-001-v2",
       "status": "live",
       "channel": "email",
-      "contacted": 0,
-      "sent": 0,
+      "contacted": 20,
+      "sent": 20,
       "delivered": null,
-      "replies": 0,
+      "replies": 1,
       "booked": null,
       "bounce": 0,
-      "insight": "LIVE ecom challenger deposit-first. active 134 / total 137. emails_sent 0. TEST vs 50239 after sends.",
+      "insight": "LIVE ecommerce v2 challenger. Test against 50239 at small n.",
       "url": "https://app.salesforge.ai",
-      "source": "get_sequence 2026-09-14"
+      "source": "Evening refresh analytics/enrollment JSON",
+      "active": 133,
+      "total": 137
     },
     {
       "id": "50289",
       "name": "C1-SaaS Growth Leaders",
       "status": "live",
       "channel": "email",
-      "contacted": 0,
-      "sent": 0,
+      "contacted": 3,
+      "sent": 3,
       "delivered": null,
       "replies": 0,
       "booked": null,
       "bounce": 0,
-      "insight": "LIVE SaaS meetings offer (Dylan exact-yes). 22 enrolled. A/B work-free vs waive next month. NOT ecommerce.",
+      "insight": "LIVE SaaS qualified-meetings offer. Keep separate from ecommerce.",
       "url": "https://app.salesforge.ai",
-      "source": "get_sequence 2026-09-14"
+      "source": "Evening refresh analytics/enrollment JSON",
+      "active": 22,
+      "total": 22
     },
     {
       "id": "48153",
       "name": "C1-N1 (legacy in-flight)",
       "status": "live",
       "channel": "email",
-      "contacted": 41,
-      "sent": 68,
+      "contacted": 44,
+      "sent": 72,
       "delivered": null,
       "replies": 0,
-      "booked": 0,
+      "booked": null,
       "bounce": 1,
-      "insight": "Legacy in-flight only. Operator: ~12 active left after uncontacted backfill to v2.",
+      "insight": "LIVE legacy in-flight only; no new enrolls.",
       "url": "https://app.salesforge.ai",
-      "source": "CO + prior SF analytics"
+      "source": "Evening refresh analytics/enrollment JSON",
+      "active": 11,
+      "total": 116
     },
     {
       "id": "50048",
@@ -183,9 +195,11 @@ window.ORCHIDEA_OPS = {
       "replies": 0,
       "booked": null,
       "bounce": 0,
-      "insight": "COMPLETED after uncontacted backfill to v2. active 0 / completed 71.",
+      "insight": "COMPLETED; superseded/backfilled.",
       "url": "https://app.salesforge.ai",
-      "source": "get_sequence status=completed"
+      "source": "Evening refresh analytics/enrollment JSON",
+      "active": 0,
+      "total": 71
     },
     {
       "id": "50224",
@@ -198,9 +212,11 @@ window.ORCHIDEA_OPS = {
       "replies": 0,
       "booked": null,
       "bounce": 0,
-      "insight": "DRAFT \u2014 HOLD until Dylan yes.",
+      "insight": "DRAFT — LI HOLD pending Dylan exact yes.",
       "url": "https://app.salesforge.ai",
-      "source": "CO"
+      "source": "Evening refresh analytics/enrollment JSON",
+      "active": 0,
+      "total": 0
     },
     {
       "id": "50290",
@@ -213,13 +229,15 @@ window.ORCHIDEA_OPS = {
       "replies": 0,
       "booked": null,
       "bounce": 0,
-      "insight": "DRAFT gated. Do not enroll.",
+      "insight": "DRAFT — gated; do not enroll.",
       "url": "https://app.salesforge.ai",
-      "source": "CO"
+      "source": "Evening refresh analytics/enrollment JSON",
+      "active": 0,
+      "total": 0
     },
     {
       "id": "50027",
-      "name": "EXP-MSG-001 (HOLD)",
+      "name": "EXP-MSG-001 (HOLD / superseded)",
       "status": "draft",
       "channel": "email",
       "contacted": 0,
@@ -228,9 +246,11 @@ window.ORCHIDEA_OPS = {
       "replies": 0,
       "booked": null,
       "bounce": 0,
-      "insight": "Held/superseded by TACTIC-v2.",
+      "insight": "HELD/superseded; do not activate.",
       "url": "https://app.salesforge.ai",
-      "source": "CO"
+      "source": "Evening refresh analytics/enrollment JSON",
+      "active": 0,
+      "total": 0
     }
   ],
   "motion_surface": [
@@ -275,7 +295,7 @@ window.ORCHIDEA_OPS = {
       "label": "Offer ecommerce",
       "kind": "lever",
       "status": "live",
-      "note": "\u226520% return / 90d or work free."
+      "note": "≥20% return / 90d or work free."
     },
     {
       "id": "offer_saas",
@@ -299,8 +319,8 @@ window.ORCHIDEA_OPS = {
       "job": "Build eligible pipeline",
       "mode": "prepare",
       "lifecycle": "live",
-      "kpi": "Eligible vs 150\u2013200/day",
-      "target": "\u2265150\u2013200/day",
+      "kpi": "Eligible vs 150–200/day",
+      "target": "≥150–200/day",
       "actual": "eligible 7",
       "working": true,
       "last_outcome": "queue 7; SCALE fills to v2 only",
@@ -346,9 +366,9 @@ window.ORCHIDEA_OPS = {
       "lifecycle": "paused",
       "kpi": "Same-day classify+draft",
       "target": "classify+draft",
-      "actual": null,
-      "working": null,
-      "last_outcome": "weekday paused",
+      "actual": "2 drafts ready",
+      "working": true,
+      "last_outcome": "2 drafts ready; 2 Dylan exact yes decisions needed",
       "paused_routines": [
         "weekday routine"
       ],
@@ -380,9 +400,9 @@ window.ORCHIDEA_OPS = {
       "lifecycle": "live",
       "kpi": "data.js current",
       "target": "Pages + brain current",
-      "actual": "brain refreshed; Pages publish blocked",
+      "actual": "data.js refresh evening",
       "working": true,
-      "last_outcome": "refresh off CO 13:56Z facts",
+      "last_outcome": "evening refresh written; prior push 6cf60f2",
       "paused_routines": [],
       "status": "live",
       "url": "https://dylang001.github.io/orchidea-ops-report/"
@@ -406,51 +426,52 @@ window.ORCHIDEA_OPS = {
     }
   ],
   "open_items": [
-    "Publish data.js to GitHub Pages (cloud usage / GH login blocked)",
-    "v2 + SaaS emails_sent still 0 \u2014 watch NY 11\u201317 send window",
-    "Eligible queue 7 vs 150\u2013200/day \u2014 SCALE fills to 50239/50240 only",
-    "LI-C1 50224 HOLD until Dylan yes",
-    "SaaS 50290 draft gated",
-    "Sent-today / remaining-to-capacity unknown",
-    "Inbox warmup mix unread",
-    "HOLD mailbox 20\u219225\u219230 ramp",
-    "Reply + CRM weekday routines paused"
+    "Publish note: prior push was 6cf60f2; this file is the 2026-09-14 evening refresh.",
+    "Queue 7 vs 150–200/day — SCALE fills to 50239/50240 only.",
+    "Cuyana: Dylan exact yes needed to suppress Karla; RESEARCH Wendy (wendy@cuyana.com). Domitilla draft ready, applied=false.",
+    "Parachute: Dylan exact yes needed to suppress Ariel work; RESEARCH Mehdi (mehdi@parachutehome.com). Costa draft ready; do not use ariel.kaye@gmail.com without yes.",
+    "LI-C1 50224 HOLD until Dylan yes.",
+    "SaaS 50290 draft gated.",
+    "Sent-today / remaining-to-capacity unknown; mailbox API has no sent-today field.",
+    "Inbox warmup mix unread.",
+    "HOLD mailbox 20→25→30 ramp.",
+    "Reply + CRM weekday routines paused."
   ],
   "bottlenecks": [
     {
       "rank": 1,
-      "type": "execution",
-      "item": "Live sequences enrolled but not sending",
-      "gap": "273 active on ecom v2 + 22 SaaS with emails_sent 0.",
-      "journey": "Enrolled \u2192 Sent dark.",
-      "unblock": "Confirm sender/window health in NY business hours.",
-      "test": "Do not judge 50239 vs 50240 until first-touch sends."
-    },
-    {
-      "rank": 2,
       "type": "supply",
-      "item": "Queue 7 vs 150\u2013200/day",
-      "gap": "Thin eligible pipeline.",
+      "item": "Queue thin",
+      "gap": "Eligible queue is 7 vs 150–200/day.",
       "journey": "Before Contacted.",
       "unblock": "Prospector fill; CO enrolls ecom to 50239/50240 only.",
       "test": "Not a copy test."
     },
     {
+      "rank": 2,
+      "type": "funnel",
+      "item": "No qualified positives yet",
+      "gap": "56 v2+SaaS sends, 2 human replies, 0 qualified positive replies.",
+      "journey": "Sent → Replies → Qualified.",
+      "unblock": "Keep sending; do not over-read small n.",
+      "test": "50239 vs 50240 at small n."
+    },
+    {
       "rank": 3,
       "type": "structural",
-      "item": "Capacity 200 vs 300",
-      "gap": "Week-1 done; ramp held.",
+      "item": "Capacity 200 vs 300 target",
+      "gap": "Scale gap 100.",
       "journey": "Send capacity.",
-      "unblock": "HOLD 20\u219225\u219230 until sends+queue healthy.",
+      "unblock": "HOLD 20→25→30 until sends+queue healthy.",
       "test": "Scale horizontally later."
     },
     {
       "rank": 4,
       "type": "ops",
-      "item": "LI + 50290 gated; Reply/CRM paused",
-      "gap": "Channels and triage lag.",
-      "journey": "New motions + Replies\u2192Booked.",
-      "unblock": "Dylan yes on LI/50290 when ready; decide Reply/CRM enable.",
+      "item": "RI decisions pending",
+      "gap": "Two WRONG_PERSON/referral outcomes need Dylan exact yes.",
+      "journey": "Replies → CRM / next contact.",
+      "unblock": "Suppress old contacts and research referrals only after exact yes.",
       "test": "One variable at a time."
     }
   ],
@@ -459,14 +480,14 @@ window.ORCHIDEA_OPS = {
       "id": "EXP-TACTIC-001-v2",
       "status": "active",
       "control": "C1-N1-v2/50239",
-      "note": "Live 50/50. active 134. TEST after sends.",
+      "note": "Live 50/50; 53 ecommerce v2 sends. TEST at small n only.",
       "url": "https://app.salesforge.ai"
     },
     {
       "id": "C1-SaaS-50289",
       "status": "active",
       "control": null,
-      "note": "Live SaaS meetings A/B. 22 enrolled.",
+      "note": "Live qualified-meetings offer; 3 sends.",
       "url": "https://app.salesforge.ai"
     },
     {
@@ -480,74 +501,112 @@ window.ORCHIDEA_OPS = {
       "id": "LI-C1",
       "status": "draft_hold",
       "control": null,
-      "note": "HOLD until Dylan yes.",
+      "note": "HOLD until Dylan exact yes.",
       "url": "https://app.salesforge.ai"
     }
   ],
   "daily": {
     "as_of": "2026-09-14",
-    "sends": null,
+    "sends": 56,
     "delivered": null,
     "remaining_to_capacity": null,
     "capacity_used": null,
     "anomalies": [
-      "ecom v2 273 active / emails_sent 0",
-      "SaaS 50289 22 enrolled / emails_sent 0",
-      "Pages data.js still seed-stale until publish"
+      "Mailbox API has no sent-today or remaining-to-capacity field.",
+      "Queue remains thin at eligible 7.",
+      "Small n: 56 v2+SaaS sends; do not over-judge copy."
     ],
     "fleet_blockers_changed": [
-      "99 uncontacted moved to v2",
-      "50048 completed",
-      "50289 SaaS live"
+      "v2 and SaaS sends are now non-zero: 56 total.",
+      "Two human replies classified WRONG_PERSON/referral.",
+      "Prior publish was 6cf60f2; this is the evening refresh."
     ],
+    "reply_intelligence": {
+      "outcomes": [
+        {
+          "account": "Cuyana",
+          "old_contact": "Karla",
+          "outcome": "WRONG_PERSON",
+          "referral": "Wendy",
+          "referral_email": "wendy@cuyana.com",
+          "draft_owner": "Domitilla",
+          "draft_status": "ready",
+          "applied": false,
+          "decision_needed": "Dylan exact yes: suppress Karla + RESEARCH Wendy"
+        },
+        {
+          "account": "Parachute",
+          "old_contact": "Ariel",
+          "outcome": "WRONG_PERSON",
+          "referral": "Mehdi",
+          "referral_email": "mehdi@parachutehome.com",
+          "draft_owner": "Costa",
+          "draft_status": "ready",
+          "applied": false,
+          "decision_needed": "Dylan exact yes: suppress Ariel work + RESEARCH Mehdi; no ariel.kaye@gmail.com without yes"
+        }
+      ],
+      "counts": {
+        "human_triaged": 2,
+        "drafts_ready": 2,
+        "dylan_exact_yes_needed": 2,
+        "ooo_skipped": 1,
+        "already_handled": 1
+      },
+      "already_handled_note": "Ben NOT_NOW",
+      "learning_flag": "Domitilla Cuyana cold used rejected 20%/90-day return language vs Sep 8 revenue offer."
+    },
     "decisions_needed": [
-      "Publish path for data.js (GH login / manual commit)",
-      "LI-C1 activate or keep HOLD",
-      "50290 keep gated?",
-      "When to enable Reply/CRM routines"
+      "Cuyana: Dylan exact yes to suppress Karla + RESEARCH Wendy (wendy@cuyana.com); Domitilla draft ready, applied=false.",
+      "Parachute: Dylan exact yes to suppress Ariel work + RESEARCH Mehdi (mehdi@parachutehome.com); Costa draft ready; no ariel.kaye@gmail.com without yes.",
+      "Keep LI-C1 50224 on HOLD and 50290 gated.",
+      "Do not ramp mailbox limits until sends and queue are healthy."
     ],
     "notes": [
-      "KEEP: v2 ecom + SaaS 50289",
-      "KILL: none",
-      "SCALE: queue fills \u2192 50239/50240 only",
-      "HOLD: LI activate + inbox ramp"
+      "KEEP: v2 + 50289.",
+      "KILL: none.",
+      "SCALE: queue → 50239/50240 only.",
+      "HOLD: LI + 50290 + mailbox ramp.",
+      "RI: 2 human triaged, 2 drafts ready, 2 Dylan exact yes needed, 1 OOO skipped, 1 already handled (Ben NOT_NOW).",
+      "Learning: Domitilla Cuyana cold used rejected 20%/90-day return language vs Sep 8 revenue offer.",
+      "remaining_to_capacity unknown."
     ],
-    "source": "SF verify + CO 13:56Z"
+    "source": "Analyst evening refresh 2026-09-14"
   },
   "weekly": {
     "label": "Week of 2026-09-08",
     "keep": [
-      "50239/50240 ecom cutover",
+      "50239/50240 ecom v2",
       "SaaS 50289"
     ],
     "kill": [],
     "scale": [
-      "Prospector fills \u2192 ecom v2 only"
+      "Prospector fills → ecom v2 only"
     ],
     "test": [
-      "50239 vs 50240 after sends",
-      "SaaS 50289 A/B after sends"
+      "50239 vs 50240 at small n"
     ],
     "insights": [
-      "Portfolio now: ecom v2 + SaaS live; legacy 50048 done; 48153 draining.",
-      "Binding issues: send lag + thin queue \u2014 not missing cutover.",
-      "Do not activate LI until Dylan exact-yes."
+      "Portfolio: ecom v2 + SaaS live; legacy 48153 draining; 50048 done.",
+      "56 v2+SaaS sends are now real; 2 human replies, 0 qualified positives.",
+      "Binding issues: thin queue and RI exact-yes decisions, not a missing cutover.",
+      "Do not activate LI until Dylan exact yes."
     ],
     "notes": [
       "Insufficient sends to judge copy."
     ],
-    "source": "Analyst 2026-09-14"
+    "source": "Analyst evening refresh 2026-09-14"
   },
   "monthly": {
     "label": "September 2026",
     "trends": [],
     "remaining_to_capacity": null,
-    "sends": null,
+    "sends": 56,
     "capacity_used": null,
     "insights": [
-      "Two live motions: ecommerce v2 test + SaaS meetings offer.",
-      "Capacity 200 known; remaining-to-capacity unread.",
-      "Publish dashboard so Dylan\u2019s daily review matches Salesforge."
+      "Two live motions: ecommerce v2 test + SaaS qualified-meetings offer.",
+      "Capacity 200 vs scale target 300; remaining-to-capacity unread.",
+      "RI has two WRONG_PERSON/referral decisions awaiting Dylan exact yes."
     ],
     "goals": [
       {
@@ -557,20 +616,56 @@ window.ORCHIDEA_OPS = {
         "progress": null,
         "baseline": null,
         "status": "unknown",
-        "note": "No deadline. Not ROAS."
+        "note": "Offer live Sep 8. Not ROAS."
       }
     ],
     "next_bets": [
-      "Confirm first v2 + SaaS sends",
-      "Refill queue to 150\u2013200/day",
-      "Publish data.js",
-      "HOLD LI + 50290 + inbox ramp"
+      "Keep v2 + 50289 sending",
+      "Refill queue to 150–200/day",
+      "Resolve two RI exact-yes decisions",
+      "HOLD LI + 50290 + mailbox ramp"
     ],
     "notes": [
       "Execution + supply dominate."
     ],
-    "source": "Analyst 2026-09-14"
-  }
+    "source": "Analyst evening refresh 2026-09-14"
+  },
+  "reply_intelligence": {
+    "outcomes": [
+      {
+        "account": "Cuyana",
+        "old_contact": "Karla",
+        "outcome": "WRONG_PERSON",
+        "referral": "Wendy",
+        "referral_email": "wendy@cuyana.com",
+        "draft_owner": "Domitilla",
+        "draft_status": "ready",
+        "applied": false,
+        "decision_needed": "Dylan exact yes: suppress Karla + RESEARCH Wendy"
+      },
+      {
+        "account": "Parachute",
+        "old_contact": "Ariel",
+        "outcome": "WRONG_PERSON",
+        "referral": "Mehdi",
+        "referral_email": "mehdi@parachutehome.com",
+        "draft_owner": "Costa",
+        "draft_status": "ready",
+        "applied": false,
+        "decision_needed": "Dylan exact yes: suppress Ariel work + RESEARCH Mehdi; no ariel.kaye@gmail.com without yes"
+      }
+    ],
+    "counts": {
+      "human_triaged": 2,
+      "drafts_ready": 2,
+      "dylan_exact_yes_needed": 2,
+      "ooo_skipped": 1,
+      "already_handled": 1
+    },
+    "already_handled_note": "Ben NOT_NOW",
+    "learning_flag": "Domitilla Cuyana cold used rejected 20%/90-day return language vs Sep 8 revenue offer."
+  },
+  "publish_note": "Prior push was 6cf60f2; this is the 2026-09-14 evening refresh."
 ,
   "gtm_radar": {
     generated_on: "2026-09-14",
