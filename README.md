@@ -16,26 +16,36 @@ python3 -m http.server 43147 --bind 0.0.0.0
 
 Then open [http://127.0.0.1:43147](http://127.0.0.1:43147).
 
-## What you should see
+## Daily brief interface
 
-Orchidea mark in the header. Sticky KPIs: **human replies · remaining today · inboxes**. Tabs: **Board | Fleet | Focus | Radar**. Board has a Today / Week / Month grain so the funnel is not redrawn three times.
+The header uses the existing Orchidea wordmark. Overview shows today's sends, the cumulative human-reply baseline, the eligible pipeline, and fleet lifecycle counts. Date labels describe a snapshot, not a live connection.
 
-Click a KPI, journey step, campaign, bot, bottleneck, or Radar card to open a detail drawer. Live system chips link out to Attio / Salesforge / Warmforge when `meta.links` is set.
+- **Overview / Today:** analyst briefing, the complete searchable campaign portfolio, baseline results, configured capacity, bot accountability, missing reporting coverage, experiments and decisions.
+- **Overview / Week and Month:** period-specific insights, experiments and goal tracking. Missing period metrics stay unknown.
+- **Bot fleet:** responsibility, KPI, actual outcome and execution state for every supplied bot.
+- **Focus:** ranked expandable priorities with next actions, journey stage, testing boundaries, separate CEO decisions and an operating checklist.
+- **Radar:** newest-first research feed with channel filters, source links, confidence labels, proof and application to Orchidea.
 
-| Tab | Reads from | Shows |
-| --- | --- | --- |
-| Board · Today | `exec`, `funnel_baseline`, `campaigns[]`, `capacity`, `inboxes`, `bottlenecks`, `meta.links` | Briefing, interactive journey x-ray, top gaps, live campaign, remaining-to-capacity, source dock |
-| Board · Week | `weekly.insights`, `campaigns[]`, `motion_surface[]` | Takeaways, campaign x-ray, test surface. Keep/kill/scale only if they have items. No second funnel |
-| Board · Month | `monthly.goals[]`, volume fields, `experiments`, `next_bets` | Offer tracking, month remaining, next bets. Not ROAS |
-| Fleet | `fleet[]` | Six bots. Click a card for KPI / actual / live URL. No Qualification |
-| Focus | `bottlenecks[]`, `open_items` | Full gap cards (once) |
-| Radar | `gtm_radar.items[]` | Experiments other GTM operators are running, with proof charts, source URL, and why-for-us. Research bot overwrites this cluster only |
+Campaign metrics are the latest observed provider totals, not daily totals. The table retains every recorded status (live, draft, paused, completed, or other supplied states). It filters locally and never activates or pauses a campaign. A dash means an unread field; zero means an observed zero.
 
-Hashes: `#board` `#week` `#month` `#fleet` `#focus` `#radar` `#radar/<item-id>`. Old `#daily` / `#weekly` / `#monthly` / `#open` still resolve.
+People and messages are different units. The baseline chart does not calculate step-to-step conversion rates. Configured capacity is not achieved volume. A bot's live status is not evidence of KPI attainment.
 
-Timezone is always **Africa/Johannesburg**. Commercial offer is one line, not a metric.
+Hashes: `#board`, `#week`, `#month`, `#fleet`, `#focus`, `#radar`, `#radar/<item-id>`. Legacy aliases remain supported. Click campaigns, bots, decisions or evidence to inspect a keyboard-accessible drawer.
 
-Capacity is shown as **sends today vs remaining to today’s capacity**. How capacity is produced (N inboxes × per-mailbox, 14-day warmup for new accounts) is a breakdown, not the headline. Do not lead with “send ceiling 200”.
+### Data still needed for a complete CEO scorecard
+
+The redesign preserves the existing snapshot and analyst refresh contract. It does not perform new provider reads or change bot configuration.
+
+- `daily.sends`, `daily.delivered` and `daily.remaining_to_capacity`: measured daily execution.
+- `funnel_baseline.qualified_positive_replies` and `booked_held`: qualified outcomes.
+- Optional `daily.reviews_completed`: observed daily review count; missing values render as not measured. The producing bot must define what a completed review means and its reporting period.
+- Optional `pipeline.eligible`: numeric eligible queue; otherwise the report displays the prospecting bot's existing actual. Queue stock must not be treated as the number of leads produced that day.
+- `fleet[].actual`, `kpi`, `target`, `working` and `last_outcome`: preserve qualitative evidence. Numeric actuals, comparable targets, and explicit reporting periods are prerequisites for a trustworthy attainment score; this interface does not infer one from prose.
+- Campaign delivery, qualified outcomes and comparable test windows remain prerequisites for declaring experiment winners.
+
+The source text itself may contain outdated workflow notes. The report displays the analyst's supplied briefing as evidence rather than silently rewriting it.
+
+UI dependencies: vendored GSAP 3.13.0 for brief panel entrance transitions, disabled for reduced motion. The report still works when that library is unavailable. No build tool or framework migration.
 
 ## Refresh contract (Outbound Analyst)
 

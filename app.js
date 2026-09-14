@@ -117,15 +117,15 @@
       const prev = i === 0 ? null : stages[i - 1].v;
       let conv = "";
       if (i === 0) {
-        conv = "start";
-      } else if (!isMissing(prev) && !isMissing(s.v) && Number(prev) !== 0) {
-        conv = "from last " + rate(s.v, prev);
+        conv = "people";
+      } else {
+        conv = s.key === "sent" ? "messages" : s.key === "contacted" ? "people" : "baseline";
       }
       const h = missingV
         ? 56
         : zero
-          ? 20
-          : Math.max(24, Math.round((Number(s.v) / max) * 120));
+          ? 0
+          : Math.max(0, Math.round((Number(s.v) / max) * 110));
       const barCls = ["j-bar", missingV ? "is-unknown" : "", zero ? "is-zero" : ""]
         .filter(Boolean).join(" ");
       const stepCls = ["j-step", missingV ? "is-unknown" : "", zero ? "is-zero" : "", s.label === stuck ? "is-stuck" : ""]
@@ -240,95 +240,57 @@
   }
 
   function hero(d) {
-    const fun = d.funnel_baseline || {};
-    const day = d.daily || {};
-    const meta = d.meta || {};
-    const rem = remainingToday(d);
+    const f = d.funnel_baseline || {}, day = d.daily || {}, meta = d.meta || {};
+    const bots = d.fleet || [], prospect = bots.find(b => /prospect/i.test(b.name));
+    const date = day.as_of || meta.generated_on;
+    const eligibleLabel = typeof prospect?.actual === "string" ? prospect.actual.replace(/^eligible\s+/i, "") : prospect?.actual;
+    const today = new Intl.DateTimeFormat('en-CA', {timeZone: meta.timezone || 'Africa/Johannesburg'}).format(new Date());
+    document.title = 'Orchidea · Daily brief';
+    document.getElementById('brand-name').textContent = '';
+    document.getElementById('subtitle').textContent = 'Daily brief';
+    document.getElementById('hero-window').innerHTML = `<strong><span class="fresh-dot ${date !== today ? 'stale' : ''}"></span> Snapshot ${esc(date || UNKNOWN)}</strong><span>${date === today ? 'Today’s snapshot' : 'Check snapshot freshness'} · ${esc(meta.timezone || UNKNOWN)}</span>`;
+    document.getElementById('hero-stats').innerHTML = [
+      ['Today’s sends', val(day.sends), `of ${plain((d.capacity || {}).weekday_ceiling)} configured capacity`, 'kpi:sends'],
+      ['Human replies', val(f.human_replies_non_ooo), 'Cumulative baseline · excludes out of office', 'kpi:replies'],
+      ['Eligible pipeline', val(d.pipeline?.eligible ?? eligibleLabel), prospect?.kpi || 'Daily target not supplied', prospect ? `bot:${prospect.id}` : 'unknown:pipeline'],
+      ['Bots running', `${bots.filter(b => b.lifecycle === 'live').length}<small> / ${bots.length}</small>`, `${bots.filter(b => b.lifecycle === 'paused').length} paused · outcomes reviewed separately`, 'fleet-summary']
+    ].map(([label,value,note,key]) => `<button class="kpi" data-open="${esc(key)}"><span class="k">${label}</span><span class="v">${value}</span><span class="s">${esc(note)}</span><span class="kpi-arrow">↗</span></button>`).join('');
+  }
 
-    document.title = `${meta.brand || "Orchidea"} · ${meta.title || "Outbound & GTM Ops"}`;
-    document.getElementById("brand-name").textContent = meta.brand || "Orchidea";
-    document.getElementById("subtitle").textContent = `${meta.partner || "Growth Partner"} · ops board`;
-    document.getElementById("hero-window").innerHTML =
-      `<strong>${esc(meta.timezone || UNKNOWN)}</strong><span>as of ${esc(day.as_of || meta.generated_on || UNKNOWN)}</span>`;
+  function campaignPortfolio(d) {
+    const all = d.campaigns || [];
+    const statuses = ['all', ...new Set(all.map(c => c.status || 'unknown'))];
+    const shown = all.filter(c => (campaignFilter === 'all' || c.status === campaignFilter) && `${c.name} ${c.id} ${c.channel}`.toLowerCase().includes(campaignSearch.toLowerCase()));
+    return `<article class="tile portfolio span-12">
+      <div class="section-heading"><div><p class="tile-kicker">Campaign portfolio</p><h2>Every campaign. One view.</h2><p class="lede">Latest observed totals, not today’s sends. Open a campaign for evidence.</p></div><span class="count-label">${all.length} campaigns</span></div>
+      <div class="portfolio-tools"><div class="status-filters" aria-label="Filter campaigns">${statuses.map(st => `<button data-campaign-filter="${esc(st)}" aria-pressed="${campaignFilter === st}">${esc(st === 'all' ? 'All campaigns' : st)} <span>${st === 'all' ? all.length : all.filter(c => c.status === st).length}</span></button>`).join('')}</div><label class="campaign-search">Search<input type="search" id="campaign-search" placeholder="Name, ID or channel" value="${esc(campaignSearch)}"></label></div>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Campaign performance"><table class="campaign-table"><thead><tr><th scope="col">Campaign</th><th scope="col">Status</th><th scope="col">Sent</th><th scope="col">Delivered</th><th scope="col">Replies</th><th scope="col">Booked</th><th scope="col">Bounces</th><th scope="col">Readout</th></tr></thead><tbody>${shown.map(c => `<tr><th scope="row"><button data-open="campaign:${esc(c.id)}" class="campaign-name">${esc(c.name)} <span>↗</span></button><small>${esc(c.channel)} · ${esc(c.id)}</small></th><td><span class="status-tag ${esc(c.status)}">${esc(c.status)}</span></td>${['sent','delivered','replies','booked','bounce'].map(k => `<td>${isMissing(c[k]) ? '<span class="data-dash" title="Not measured in this snapshot">—</span>' : val(c[k])}</td>`).join('')}<td><span class="readout ${c.status === 'live' && c.sent === 0 ? 'attention' : ''}">${c.status === 'live' ? c.sent === 0 ? 'No sends observed' : 'View results' : c.status === 'completed' ? 'Completed' : c.status === 'paused' ? 'Paused' : 'Not activated'}</span></td></tr>`).join('') || '<tr><td colspan="8" class="empty">No campaigns match these filters.</td></tr>'}</tbody></table></div>
+      <div class="table-note"><span>— Not measured · 0 Observed zero · Live is the recorded activation state</span>${ext(linksOf(d).salesforge, 'Open Salesforge')}</div>
+    </article>`;
+  }
 
-    document.getElementById("hero-stats").innerHTML = [
-      `<button type="button" class="kpi miss" data-open="kpi:replies">
-        <div class="k">Human replies</div>
-        <div class="v">${val(fun.human_replies_non_ooo)}</div>
-        <div class="s">qualified ${val(fun.qualified_positive_replies)}</div>
-      </button>`,
-      `<button type="button" class="kpi warn" data-open="kpi:remaining">
-        <div class="k">Remaining today</div>
-        <div class="v">${val(rem)}</div>
-        <div class="s">sends today ${val(day.sends)} · delivered ${val(day.delivered)}</div>
-      </button>`,
-      `<button type="button" class="kpi" data-open="kpi:inboxes">
-        <div class="k">Inboxes</div>
-        <div class="v">${val(inboxesOf(d).active)}</div>
-        <div class="s">warmup mix unread</div>
-      </button>`
-    ].join("");
+  function fleetSummary(d) {
+    const bots = d.fleet || [];
+    return `<article class="tile span-8"><div class="section-heading"><div><p class="tile-kicker">Bot accountability</p><h2>Is the work getting done?</h2></div><button class="text-button" data-tab-jump="fleet">View fleet ↗</button></div><div class="accountability">${bots.map(b => `<button class="accountability-row" data-open="bot:${esc(b.id)}"><span><strong>${esc(b.name)}</strong><small>${esc(b.kpi || b.target || 'Target not supplied')}</small></span><span class="bot-evidence">${val(b.actual)}</span><span class="status-tag ${esc(b.lifecycle)}">${esc(b.lifecycle || UNKNOWN)}</span></button>`).join('')}</div><p class="src">Operational status does not establish KPI attainment. Numeric actuals, targets and reporting periods are needed to score performance.</p></article>`;
+  }
+
+  function experimentList(d) {
+    return (d.experiments || []).map(e => `<button class="experiment-row" data-open="experiment:${esc(e.id)}"><div><span class="status-tag ${esc(e.status)}">${esc((e.status || UNKNOWN).replace(/_/g,' '))}</span><h3>${esc(e.id)}</h3><p>${esc(e.note || '')}</p></div><span>↗</span></button>`).join('') || emptyState('No experiments recorded.');
   }
 
   function boardToday(d) {
-    const ex = d.exec || {};
-    const next = (d.daily && d.daily.decisions_needed) || [];
-    const bn = d.bottlenecks || [];
-    const camp = (d.campaigns || [])[0];
-    const L = linksOf(d);
-
-    return `
-      <div class="brief">
-        <p>${esc(ex.situation || UNKNOWN)}</p>
-        ${next[0] ? `<button type="button" class="now-btn" data-open="action:0" title="${esc(next[0])}">Focus now<i>${ARROW}</i></button>` : ""}
-      </div>
+    const bn = [...(d.bottlenecks || [])].sort((a,b) => a.rank-b.rank), ex = d.exec || {};
+    const cap = d.capacity || {};
+    const capPct = typeof cap.weekday_ceiling === 'number' && cap.scale_target_day > 0 ? Math.min(100,cap.weekday_ceiling/cap.scale_target_day*100) : null;
+    return `<section class="executive-summary"><div><p class="tile-kicker">Your operating picture</p><h1>${bn.length ? 'Unblock today.<br>Build tomorrow.' : 'Your daily operating review.'}</h1><p>${bn.length ? esc(bn[0].item) + '. ' + esc(bn[0].unblock || '') : 'Review the latest results, campaign activity and next decisions.'}</p><button class="primary-button" data-tab-jump="focus">Review ${bn.length} priorities <span>↗</span></button></div><aside class="briefing-note"><span class="note-heading">Latest analyst briefing</span><p>${esc(ex.situation || 'No briefing supplied.')}</p><details><summary>What changed & evidence</summary><ul>${(ex.happening || []).map(x => `<li>${esc(x)}</li>`).join('')}</ul>${sourceLine(ex.source)}</details></aside></section>
       <div class="bento">
-        <article class="tile span-8 accent-conv">
-          <p class="tile-kicker">Journey</p>
-          <h2>Where the control dies</h2>
-          <p class="lede">Click a step for definition and source.</p>
-          ${funnelViz(d)}
-        </article>
-        <article class="tile span-4 accent-ops">
-          <p class="tile-kicker">Do this</p>
-          <h2>Focus now</h2>
-          <div class="stack">
-            ${bn.slice(0, 3).map((b, i) => `
-              <button type="button" class="rank-btn" data-open="bottleneck:${esc(b.rank || i + 1)}">
-                <div class="row">
-                  <span class="rank">${esc(b.rank || i + 1)}</span>
-                  <div>
-                    <span class="pill ${esc(b.type || "ops")}">${esc(b.type || UNKNOWN)}</span>
-                    <strong>${esc(b.item || UNKNOWN)}</strong>
-                    <p>${esc(b.unblock || "")}</p>
-                  </div>
-                </div>
-              </button>`).join("")}
-            <button type="button" class="action-btn" data-tab-jump="focus">
-              <strong>All gaps on Focus</strong>
-              <p>Name, journey seat, unblock, and the test we should not run yet.</p>
-            </button>
-          </div>
-        </article>
-        <article class="tile span-7">
-          <p class="tile-kicker">Live campaign</p>
-          <h2>Observed control</h2>
-          <p class="lede">Only campaigns with a provider read. Nothing invented.</p>
-          ${campaignCard(camp, true)}
-        </article>
-        <article class="tile span-5">${capacityTile(d)}</article>
-        <article class="tile span-12">
-          <p class="tile-kicker">Systems of record</p>
-          <h2>Open the live surface</h2>
-          <p class="lede">This board never replaces Attio, Salesforge, or Notion. Unknown means the provider was not read.</p>
-          <div class="src-dock">
-            ${ext(L.attio, "Attio · identity")}
-            ${ext(L.salesforge, "Salesforge · execution")}
-            ${ext(L.notion, "Notion · approvals")}
-            ${ext(L.warmforge, "Warmforge · inboxes")}
-            ${ext(L.dashboard, "This report")}
-          </div>
-        </article>
+        ${campaignPortfolio(d)}
+        <article class="tile span-8"><div class="section-heading"><div><p class="tile-kicker">Outbound results</p><h2>Where visibility breaks</h2><p class="lede">Cumulative baseline. People and messages are different units.</p></div><span class="status-tag draft">Baseline</span></div>${funnelViz(d)}<p class="data-note">Delivery and qualification must be measured before judging copy or calculating a reply conversion rate.</p></article>
+        <article class="tile span-4"><p class="tile-kicker">Production readiness</p><h2>Capacity to grow</h2><div class="capacity-display"><strong>${val(cap.weekday_ceiling)}</strong><span>/ ${plain(cap.scale_target_day)}<br>target sends per weekday</span></div><div class="capacity-scale ${capPct === null ? 'unknown-track' : ''}">${capPct === null ? '' : `<i style="width:${capPct}%"></i>`}</div><div class="metric-row"><span>Sent today</span><b>${valBtn(d.daily?.sends,'kpi:sends')}</b></div><div class="metric-row"><span>Remaining today</span><b>${valBtn(remainingToday(d),'kpi:remaining')}</b></div><div class="metric-row"><span>Inbox warmup mix</span><b>${valBtn(inboxesOf(d).warmed,'kpi:inboxes')}</b></div><p class="src">Configured capacity, not achieved output. ${esc(cap.source || '')}</p></article>
+        ${fleetSummary(d)}
+        <article class="tile span-4"><p class="tile-kicker">Reporting coverage</p><h2>What we can’t judge yet</h2><div class="coverage-list">${[['Daily delivery',d.daily?.delivered],['Qualified replies',d.funnel_baseline?.qualified_positive_replies],['Meetings held',d.funnel_baseline?.booked_held],['Reviews completed',d.daily?.reviews_completed]].map(([label,v]) => `<div><span>${label}</span><b>${isMissing(v) ? 'Not measured' : val(v)}</b></div>`).join('')}</div><p class="data-note">The next analyst refresh needs these outcomes to close the daily review.</p></article>
+        <article class="tile span-8"><p class="tile-kicker">Experiment agenda</p><h2>What to test next</h2><p class="lede">Recorded experiments and their current gates. Resolve execution gaps before interpreting results.</p>${experimentList(d)}</article>
+        <article class="tile span-4"><p class="tile-kicker">Decisions for you</p><h2>Clear the next step</h2>${(d.daily?.decisions_needed || []).map((x,i) => `<button class="decision-link" data-open="decision:${i}"><span>${esc(x)}</span><span>↗</span></button>`).join('') || emptyState('No decisions recorded.')}<div class="src-dock">${ext(linksOf(d).attio,'Attio')}${ext(linksOf(d).notion,'Notion')}</div></article>
       </div>`;
   }
 
@@ -358,7 +320,7 @@
         </article>
         <article class="tile span-5">
           <p class="tile-kicker">Campaign x-ray</p>
-          <h2>C1-N1</h2>
+          <h2>${esc(camp?.name || "No observed campaign")}</h2>
           ${campaignCard(camp, false)}
         </article>
         <article class="tile span-12">
@@ -427,10 +389,10 @@
     const offer = (d.meta && d.meta.offer_live) || "";
     return `
       <div class="grain">
-        <div class="grain-switch" role="tablist" aria-label="Time grain">
-          <button type="button" data-grain="today" aria-selected="${g === "today"}">Today</button>
-          <button type="button" data-grain="week" aria-selected="${g === "week"}">Week</button>
-          <button type="button" data-grain="month" aria-selected="${g === "month"}">Month</button>
+        <div class="grain-switch" role="group" aria-label="Reporting period">
+          <button type="button" data-grain="today" aria-pressed="${g === "today"}">Today</button>
+          <button type="button" data-grain="week" aria-pressed="${g === "week"}">Week</button>
+          <button type="button" data-grain="month" aria-pressed="${g === "month"}">Month</button>
         </div>
         <p class="offer-chip">${esc(offer)}</p>
       </div>
@@ -449,8 +411,8 @@
     return `
       <div class="sec">
         <p class="sec-kicker">Fleet</p>
-        <h2>${bots.length} bots. Status is operational, not a KPI of zero.</h2>
-        <p>Actual stays unknown until a provider read-back. Paused means the weekday routine is not running. Qualification is not in this fleet.</p>
+        <h1>The team behind the numbers.</h1>
+        <p>Review each bot’s responsibility, target and latest outcome. Running status alone does not mean a target was met.</p>
       </div>
       <div class="fleet-legend">
         <span class="pill live">Live ${counts.live || 0}</span>
@@ -471,7 +433,7 @@
           <div class="bot-kpi"><span>KPI it tracks</span><b>${esc(b.kpi || b.target || UNKNOWN)}</b></div>
           <div class="bot-stats">
             <div><span>Actual</span><b>${val(b.actual)}</b></div>
-            <div><span>Working?</span><b>${esc(String(working))}</b></div>
+            <div><span>Execution verified?</span><b>${esc(String(working))}</b></div>
           </div>
           <p class="bot-out"><span>Last outcome</span>${esc(b.last_outcome || UNKNOWN)}</p>
           <p class="bot-id">${esc(b.id || UNKNOWN)} · ${esc(b.mode || UNKNOWN)}</p>
@@ -481,84 +443,33 @@
   }
 
   function focusBoard(d) {
-    const items = d.open_items || [];
-    const bn = d.bottlenecks || [];
-    return `
-      <div class="sec">
-        <p class="sec-kicker">Focus</p>
-        <h2>The gap, where it sits, the unblock, the test we should not fake.</h2>
-        <p>Overview shows the top three. This page is the full consultative stack, once, not restated as bullet twins.</p>
-      </div>
-      <div class="focus-stack">${bn.map((b, i) => `
-        <article class="focus-card" data-open="bottleneck:${esc(b.rank || i + 1)}" role="button" tabindex="0">
-          <div class="focus-gap">
-            <div class="focus-kicker">
-              <span class="rank">${esc(b.rank || i + 1)}</span>
-              <span class="pill ${esc(b.type || "ops")}">${esc(b.type || UNKNOWN)}</span>
-            </div>
-            <h3>${esc(b.item || UNKNOWN)}</h3>
-            <p>${esc(b.gap || "")}</p>
-          </div>
-          <div><h4>Where it sits</h4><p>${esc(b.journey || UNKNOWN)}</p></div>
-          <div><h4>Unblock</h4><p>${esc(b.unblock || UNKNOWN)}</p></div>
-          <div class="focus-test"><h4>Test we should / should not run</h4><p>${esc(b.test || UNKNOWN)}</p></div>
-        </article>`).join("")}</div>
-      <article class="tile" style="margin-top:12px">
-        <p class="tile-kicker">Do next</p>
-        <ol class="next-list">${items.map((t, i) => `<li><button type="button" class="unknown-btn" style="font-style:normal;color:inherit;font-weight:650" data-open="action:${i}">${esc(t)}</button></li>`).join("")}</ol>
-      </article>`;
+    const bn = [...(d.bottlenecks || [])].sort((a,b) => a.rank-b.rank);
+    return `<div class="page-heading"><div><p class="tile-kicker">Decision room</p><h1>Give today a clear direction.</h1><p>Work down the priorities. Each one connects a gap to the next action and its test boundary.</p></div><span class="large-count">${bn.length}<small>priorities</small></span></div>
+      <div class="focus-layout"><div class="focus-stack">${bn.map((b,i) => `<details class="priority" ${i === 0 ? 'open' : ''}><summary><span class="priority-rank">${esc(b.rank || i+1).padStart(2,'0')}</span><div><span class="tile-kicker">${esc(b.type || 'Operations')}</span><h2>${esc(b.item)}</h2><p>${esc(b.gap || '')}</p></div><span class="expand-symbol">+</span></summary><div class="priority-body"><div class="priority-location"><span>Journey stage</span><strong>${esc(b.journey || UNKNOWN)}</strong></div><div class="action-path"><div><span class="step-dot"></span><h3>Next action</h3><p>${esc(b.unblock || UNKNOWN)}</p></div><div><span class="step-dot outline"></span><h3>Testing boundary</h3><p>${esc(b.test || UNKNOWN)}</p></div></div><button class="text-button" data-open="bottleneck:${esc(b.rank || i+1)}">Open full brief ↗</button></div></details>`).join('') || emptyState('No priorities recorded.')}</div>
+      <aside class="focus-sidebar"><article class="tile"><p class="tile-kicker">Your decisions</p><h2>Awaiting direction</h2>${(d.daily?.decisions_needed || []).map((x,i) => `<button class="decision-link" data-open="decision:${i}">${esc(x)} <span>↗</span></button>`).join('') || emptyState('No decisions recorded.')}<p class="src">Actions in connected systems still require their normal approval workflow.</p></article><article class="tile"><p class="tile-kicker">Operating checklist</p><h2>Keep in view</h2><ol class="open-checklist">${(d.open_items || []).map((x,i) => `<li><button data-open="action:${i}">${esc(x)}</button></li>`).join('')}</ol></article></aside></div>`;
   }
 
   function radar(d, filter) {
-    const pack = d.gtm_radar || {};
-    const items = pack.items || [];
-    const active = filter || "all";
-    const channels = ["all", ...Array.from(new Set(items.map((x) => x.channel).filter(Boolean)))];
-    const shown = active === "all" ? items : items.filter((x) => x.channel === active);
-
-    return `
-      <div class="radar-head">
-        <div class="sec" style="margin:0">
-          <p class="sec-kicker">Radar</p>
-          <h2>What other GTM operators are testing</h2>
-          <p>Research bot overwrites <code>gtm_radar</code> only. Confidence is labelled. Vendor claims stay vendor. Click a card for the full why-for-us and the source.</p>
-        </div>
-        <div class="radar-filters">${channels.map((c) =>
-          `<button type="button" data-radar-filter="${esc(c)}" aria-selected="${c === active}">${esc(c)}</button>`
-        ).join("")}</div>
-      </div>
-      <div class="radar-grid">${shown.map((item) => `
-        <button type="button" class="radar-card" data-open="radar:${esc(item.id)}">
-          <div class="meta">
-            <span class="pill ${esc(item.status || "watch")}">${esc(item.status || "watch")}</span>
-            <span class="pill ${esc(item.confidence || "vendor")}">${esc((item.confidence || "vendor").replace(/_/g, " "))}</span>
-            <span class="pill">${esc(item.channel || "")}</span>
-          </div>
-          <h3>${esc(item.title || UNKNOWN)}</h3>
-          <div class="metric">${esc(item.metric || "")}</div>
-          ${proofViz(item.proof)}
-          <p class="why"><strong>For us.</strong> ${esc(item.why_for_us || item.summary || "")}</p>
-          <p class="src">${esc(item.source_name || "")} · ${esc(item.published || "")}</p>
-        </button>`).join("") || emptyState("Radar is empty. Research bot fills gtm_radar.items[].")}</div>
-      ${sourceLine(pack.source)}`;
+    const pack = d.gtm_radar || {}, items = pack.items || [], active = filter || 'all';
+    const channels = ['all', ...new Set(items.map(x => x.channel).filter(Boolean))];
+    const shown = (active === 'all' ? [...items] : items.filter(x => x.channel === active)).sort((a,b) => String(b.published || '').localeCompare(String(a.published || '')));
+    return `<div class="page-heading"><div><p class="tile-kicker">Research radar</p><h1>Outside signals.<br>Useful next moves.</h1><p>Research worth considering, with the evidence and what it means for Orchidea.</p></div><span class="large-count">${items.length}<small>signals tracked</small></span></div><div class="radar-layout"><aside class="radar-sidebar"><h2>Explore the feed</h2><div class="radar-filters">${channels.map(c => `<button data-radar-filter="${esc(c)}" aria-pressed="${c === active}">${esc(c === 'all' ? 'All signals' : c)}<span>${c === 'all' ? items.length : items.filter(x => x.channel === c).length}</span></button>`).join('')}</div><div class="radar-key"><h3>Read the evidence</h3><p><strong>Benchmark</strong> Broad reference data.</p><p><strong>Operator test</strong> A practitioner’s result.</p><p><strong>Vendor</strong> A provider’s claim.</p><p>These are external findings, not Orchidea results.</p></div></aside><div class="research-feed">${shown.map(item => `<article class="feed-item"><div class="feed-byline"><span class="source-avatar" aria-hidden="true">${esc((item.source_name || 'R').slice(0,1))}</span><div><strong>${esc(item.source_name || 'Source not supplied')}</strong><small>${esc(item.published || 'Date not supplied')} · ${esc(item.channel || '')}</small></div><span class="status-tag ${esc(item.status)}">${esc(item.status || 'watch')}</span></div><button class="feed-title" data-open="radar:${esc(item.id)}"><h2>${esc(item.title)}</h2><span>↗</span></button><p>${esc(item.summary || '')}</p>${item.proof ? `<div class="feed-evidence"><span class="evidence-label">${esc((item.confidence || 'vendor').replace(/_/g,' '))} · ${esc(item.metric || '')}</span>${proofViz(item.proof)}</div>` : ''}<div class="feed-implication"><span>For Orchidea</span><p>${esc(item.why_for_us || 'Application not yet assessed.')}</p></div><div class="feed-actions">${ext(item.url,'Read source')}<button class="text-button" data-open="radar:${esc(item.id)}">Review evidence ↗</button></div></article>`).join('') || emptyState('No research signals in this category.')}${sourceLine(pack.source)}</div></div>`;
   }
 
   function footer(d) {
-    const meta = d.meta || {};
-    const systems = meta.systems || {};
-    document.getElementById("footer").innerHTML = `
-      <p>${esc(meta.brand || "Orchidea")} · snapshot ${esc(meta.generated_on || UNKNOWN)} · ${esc(meta.timezone || UNKNOWN)} · ${esc(systems.identity || UNKNOWN)} / ${esc(systems.execution || UNKNOWN)} / ${esc(systems.approvals || UNKNOWN)}.</p>
-      <p>${(meta.notes || []).map(esc).join(" ")}</p>
-      <p>Analyst overwrites ops metrics. Research bot overwrites Radar. null is ${UNKNOWN}, never 0. Qualification is deleted. No Salesforce.</p>`;
+    document.getElementById('footer').innerHTML = `<p>Orchidea / Daily brief</p><p>Snapshot ${esc(d.meta?.generated_on || UNKNOWN)} · ${esc(d.meta?.timezone || 'Africa/Johannesburg')}</p><div class="src-dock">${ext(linksOf(d).salesforge,'Salesforge')}${ext(linksOf(d).attio,'Attio')}${ext(linksOf(d).warmforge,'Warmforge')}</div>`;
   }
+  let drawerTrigger = null;
 
   function closeDrawer() {
     const el = document.getElementById("drawer");
     el.hidden = true;
     document.body.classList.remove("drawer-open");
+    if (drawerTrigger?.isConnected) drawerTrigger.focus();
   }
 
   function openDrawer(kicker, title, html) {
+    if (document.getElementById("drawer").hidden) drawerTrigger = document.activeElement;
     document.getElementById("drawer-kicker").textContent = kicker || "";
     document.getElementById("drawer-title").textContent = title || "";
     document.getElementById("drawer-body").innerHTML = html;
@@ -578,13 +489,20 @@
     const cap = d.capacity || {};
     const ib = inboxesOf(d);
 
+    if (kind === 'fleet-summary') { showTab('fleet', d); window.scrollTo({top:0,behavior:'smooth'}); return; }
+    if (kind === 'action' || kind === 'decision') {
+      const text = kind === 'decision' ? d.daily?.decisions_needed?.[Number(id)] : d.open_items?.[Number(id)];
+      if (!text) return;
+      openDrawer(kind === 'decision' ? 'Decision needed' : 'Operating checklist', text, `<p>This item is recorded in the ${esc(d.daily?.as_of || d.meta?.generated_on || UNKNOWN)} snapshot.</p>${sourceLine(d.daily?.source)}<p>Review the related priorities before applying changes in the connected system.</p><button class="primary-button" data-tab-jump="focus">Review priorities ↗</button>`);
+      return;
+    }
     if (kind === "kpi" && id === "replies") {
       openDrawer("Headline KPI", "Human replies", `
-        <p>This is the conversion question. Observed <b>0</b> is not unknown. Qualified positive remains unread.</p>
+        <p>This is the conversion question. The cumulative human reply baseline is separate from campaign-level provider replies. Qualified positive remains unread.</p>
         <div class="metric-row"><span>Human replies (non-OOO)</span><b>${val(fun.human_replies_non_ooo)}</b></div>
         <div class="metric-row"><span>Qualified positive</span><b>${val(fun.qualified_positive_replies)}</b></div>
-        <div class="metric-row"><span>2026 average (Instantly)</span><b>3.43%</b></div>
-        <p>Do not activate EXP-MSG-001 on zero replies while delivered is unknown. That test teaches nothing.</p>
+        ${sourceLine(fun.source)}
+        <p>Do not activate EXP-MSG-001 on zero replies while delivered is unknown. Delivery is needed to interpret a reply rate.</p>
         ${ext(L.salesforge, "Open Salesforge")}
         ${ext("#radar/radar-instantly-2026", "See the 2026 reply ladder")}`);
       return;
@@ -661,14 +579,14 @@
         <div class="metric-row"><span>Working</span><b>${val(b.working)}</b></div>
         <div class="metric-row"><span>Mode</span><b>${esc(b.mode || UNKNOWN)}</b></div>
         <p>${esc(b.last_outcome || "")}</p>
-        ${b.url ? ext(b.url, "Open live surface") : "<p>No live URL on this bot yet. Analyst can set fleet[].url.</p>"}`);
+        ${b.url ? ext(b.url, "Open live surface") : "<p>No destination supplied for this bot.</p>"}`);
       return;
     }
 
     if (kind === "bottleneck" || kind === "action") {
       const bn = d.bottlenecks || [];
       const idx = kind === "action" ? 0 : Math.max(0, Number(id) - 1);
-      const b = bn[idx] || bn[0];
+      const b = bn.find(x => String(x.rank) === id) || bn[idx];
       if (!b) return;
       openDrawer(`Gap ${b.rank || ""}`, b.item, `
         <p>${esc(b.gap || "")}</p>
@@ -721,19 +639,21 @@
 
     if (kind === "unknown") {
       openDrawer("Unknown ≠ 0", "Why this is blank", `
-        <p><b>null</b> means the provider was not read, or the field is not known. The UI prints “unknown”.</p>
-        <p><b>0</b> means we observed zero, for example human replies on C1-N1.</p>
+        <p><b>null</b> means the provider was not read, or the field is not known. This metric has not been measured in the snapshot.</p>
+        <p><b>0</b> means we observed zero, as distinct from an unread field.</p>
         <p>Never coerce a missing Salesforge / Attio / Notion read to 0. Analyst first-run is what fills today’s sends, remaining, delivered, and inbox mix.</p>`);
     }
   }
 
+  let campaignFilter = "all";
+  let campaignSearch = "";
   let grain = "today";
   let radarFilter = "all";
 
   function showTab(name, d) {
     const tab = name === "open" ? "focus" : name === "daily" ? "board" : name;
     document.querySelectorAll(".tocnav button").forEach((b) =>
-      b.setAttribute("aria-selected", String(b.dataset.tab === tab))
+      b.setAttribute("aria-pressed", String(b.dataset.tab === tab))
     );
     document.querySelectorAll(".panel").forEach((p) => {
       const on = p.id === "panel-" + tab;
@@ -741,6 +661,11 @@
       p.hidden = !on;
     });
     document.body.className = `tab-${tab} grain-${grain}` + (document.getElementById("drawer").hidden ? "" : " drawer-open");
+    if (window.gsap && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const panel = document.getElementById('panel-' + tab);
+      gsap.killTweensOf(panel);
+      gsap.fromTo(panel, {opacity:0.65, y:5}, {opacity:1, y:0, duration:0.3, clearProps:'transform,opacity'});
+    }
     const hash = tab === "board" && grain !== "today" ? grain : tab;
     const cur = (location.hash || "").replace("#", "").split("/")[0];
     if (cur !== hash) history.replaceState(null, "", "#" + hash);
@@ -774,7 +699,16 @@
     showTab(parsed.tab, d);
     if (parsed.radarId) inspect("radar:" + parsed.radarId, d);
 
+    document.body.addEventListener('input', e => {
+      if (e.target.id !== 'campaign-search') return;
+      campaignSearch = e.target.value;
+      const old = document.querySelector('.portfolio');
+      const holder = document.createElement('div'); holder.innerHTML = campaignPortfolio(d);
+      old.querySelector('tbody').replaceWith(holder.querySelector('tbody'));
+    });
     document.body.addEventListener("click", (e) => {
+      const cf = e.target.closest('[data-campaign-filter]');
+      if (cf) { campaignFilter = cf.dataset.campaignFilter; document.querySelector('.portfolio').outerHTML = campaignPortfolio(d); document.querySelector(`[data-campaign-filter="${CSS.escape(campaignFilter)}"]`)?.focus(); return; }
       const close = e.target.closest("[data-close-drawer]");
       if (close) { closeDrawer(); return; }
 
@@ -788,7 +722,10 @@
 
       const tabBtn = e.target.closest(".tocnav [data-tab]");
       if (tabBtn) {
-        if (tabBtn.dataset.tab === "board") grain = "today";
+        if (tabBtn.dataset.tab === "board") {
+          grain = "today";
+          document.getElementById("panel-board").innerHTML = board(d, grain);
+        }
         showTab(tabBtn.dataset.tab, d);
         window.scrollTo({ top: document.querySelector(".page").offsetTop - 8, behavior: "smooth" });
         return;
@@ -822,7 +759,14 @@
 
     document.body.addEventListener("keydown", (e) => {
       if (e.key === "Escape") closeDrawer();
-      if (e.key === "Enter" && e.target.closest("[data-open][role='button']")) {
+      if (e.key === 'Tab' && !document.getElementById('drawer').hidden) {
+        const focusable = [...document.querySelectorAll('.drawer button, .drawer a[href], .drawer [tabindex="0"]')].filter(el => !el.hidden && !el.disabled);
+        const first = focusable[0], last = focusable[focusable.length-1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
+      }
+      if ((e.key === "Enter" || e.key === " ") && e.target.closest("[data-open][role='button']")) {
+        e.preventDefault();
         const key = e.target.closest("[data-open]").dataset.open;
         if (key) inspect(key, d);
       }
