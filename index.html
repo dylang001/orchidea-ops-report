@@ -50,7 +50,23 @@
     <footer id="footer"></footer>
   </main>
 
-  <script src="data.js?v=7"></script>
-  <script src="app.js?v=7"></script>
+  <script>
+    (function () {
+      var data = document.createElement("script");
+      data.src = "data.js?t=" + Date.now();
+      data.onload = function () {
+        var app = document.createElement("script");
+        app.src = "app.js?v=7";
+        document.body.appendChild(app);
+      };
+      data.onerror = function () {
+        document.body.insertAdjacentHTML(
+          "afterbegin",
+          "<p class='load-error'>data.js did not load. Serve this folder with python3 -m http.server 43147</p>"
+        );
+      };
+      document.body.appendChild(data);
+    })();
+  </script>
 </body>
 </html>
