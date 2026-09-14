@@ -1,472 +1,578 @@
 /**
  * Orchidea Outbound / GTM Ops · living snapshot.
- *
- * The Outbound Analyst bot overwrites this file on a schedule.
- * Contract:
- *   - Assign the full object to window.ORCHIDEA_OPS (this file is loaded as a script).
- *   - Missing provider reads MUST be `null`. Never coerce missing to 0.
- *   - 0 means observed zero. [] means none observed. null means unknown.
- *   - Every numeric cluster carries a `source` string.
- *   - Do not invent metrics. Do not add Salesforce.
- *   - Timezone is always Africa/Johannesburg.
- *   - Qualification is deleted. Do not put it back in fleet[] or paused_routines.
- *
- * Stable top-level keys (keep these; UI reads them):
- *   meta, exec, goals, capacity, funnel_baseline, fleet, paused_routines,
- *   open_items, bottlenecks, experiments, daily, weekly, monthly,
- *   gtm_radar
- *
- * Optional URL fields (omit or null if unknown; UI hides the control):
- *   meta.links.{salesforge,attio,notion,warmforge,dashboard}
- *   campaigns[].url   fleet[].url   motion_surface[].url   experiments[].url
- *
- * Research bot overwrites gtm_radar only. Outbound Analyst overwrites the rest.
- *   gtm_radar.items[] fields: id, title, published, channel, confidence
- *     (benchmark|operator_test|vendor), status (watch|try|skip), summary,
- *     why_for_us, url, source_name, metric, maps_to, proof
- *   proof: { type: bars|split|compare, caption, rows:[{label,value,hint}] }
- *
- * Analyst-fillable clusters (added 2026-09-14; seed unknown as null / []):
- *   inboxes              { active, warmed, warming, new, warmup_days, per_mailbox_day, source }
- *                        warmed / warming / new stay null until a mailbox mix read exists.
- *                        Do NOT invent a 20/5 split from active=10.
- *   campaigns[]          Observed campaigns only. Omit others rather than fake stats.
- *                        Fields: id, name, status, channel, contacted, sent, delivered,
- *                        replies, booked, bounce, insight, source
- *   motion_surface[]     Test surface (channels + offer levers). Alias: tests[]
- *                        Fields: id, label, kind (channel|lever), status
- *                        (tested|live|proposed|not_started), note
- *   daily.remaining_to_capacity  null until sends are read (UI will also derive
- *                        weekday_ceiling − daily.sends when both are numeric)
- *   weekly.insights[]    Consultative week takeaways (falls back to weekly.notes)
- *   monthly.insights[]   Month takeaways
- *   monthly.goals[]      Goal tracking toward 20% revenue growth / keep working free
- *                        Fields: id, label, target, progress, baseline, status, note
- *   monthly.next_bets[]  What we will test / do next
- *   monthly.remaining_to_capacity / monthly.sends / monthly.capacity_used
- *                        Month remaining-to-capacity. null until Analyst reads volume.
- *   fleet[].kpi          Human-readable KPI the bot is supposed to track
- *   fleet[].lifecycle    live | paused | draft  (operational status)
- *   fleet[].working      null until a read-back proves the bot is producing the KPI
- *   bottlenecks[].gap, journey, unblock, test
- *                        Consultative Focus fields. item/type/rank stay required.
- *
- * Do not restore Qualification. Do not add Salesforce. Do not invent today's sends,
- * delivered, inbox warmup mix, or campaign performance.
+ * Analyst refresh 2026-09-14 ~15:57 JHB off CO+SF verify.
  */
 window.ORCHIDEA_OPS = {
-  meta: {
-    brand: "Orchidea",
-    partner: "Growth Partner",
-    title: "Outbound & GTM Ops Report",
-    generated_on: "2026-09-14",
-    timezone: "Africa/Johannesburg",
-    offer_live: "Sep 8: 20% revenue growth, or keep working free until hit. No deadline. No ROAS.",
-    systems: { identity: "Attio", execution: "Salesforge", approvals: "Notion" },
-    links: {
-      salesforge: "https://app.salesforge.ai",
-      attio: "https://app.attio.com",
-      notion: null,
-      warmforge: "https://app.warmforge.ai",
-      dashboard: "https://dylang001.github.io/orchidea-ops-report/"
+  "meta": {
+    "brand": "Orchidea",
+    "partner": "Growth Partner",
+    "title": "Outbound & GTM Ops Report",
+    "generated_on": "2026-09-14",
+    "timezone": "Africa/Johannesburg",
+    "offer_live": "Ecommerce v2: \u226520% better return / 90d or work free. SaaS 50289: more qualified meetings from paid in 90d (A work-free / B waive next month).",
+    "systems": {
+      "identity": "Attio",
+      "execution": "Salesforge",
+      "approvals": "Notion"
     },
-    notes: [
+    "links": {
+      "salesforge": "https://app.salesforge.ai",
+      "attio": "https://app.attio.com",
+      "notion": null,
+      "warmforge": "https://app.warmforge.ai",
+      "dashboard": "https://dylang001.github.io/orchidea-ops-report/"
+    },
+    "notes": [
       "Contacted != enrolled != sent != delivered != replied.",
-      "Configuration is not an outcome.",
-      "C1-N1 / 48153 is observed control, not replenishment-enabled."
+      "Ecommerce NEW enrolls 50/50 \u2192 50239 + 50240.",
+      "Legacy 48153 in-flight only (~12 active). Legacy 50048 COMPLETED after uncontacted backfill.",
+      "SaaS 50289 LIVE (meetings offer). 50290 + LI-C1 still gated."
     ]
   },
-
-  exec: {
-    situation: "Three stacked gaps, not a send-ceiling lecture. Remaining-to-capacity for today is unknown until Analyst reads sends. The journey goes dark at Delivered, then human replies are observed zero, so we cannot yet split deliverability vs copy. LinkedIn, mass video, and lead magnets are untested. Reply and CRM weekday routines are paused. EXP-MSG-001 is proposed, not live.",
-    happening: [
-      "Control C1-N1 / 48153 is the live observed campaign (41 contacted, 68 sent, 1 bounce).",
-      "10 inboxes are active; warmup mix (warmed / warming / new) is unknown until Analyst reads it.",
-      "Sep 8 offer is live: 20% revenue growth, or keep working free until hit. No deadline.",
-      "Outbound Analyst is in the fleet as live / building."
+  "exec": {
+    "situation": "Operator moved 99 uncontacted onto v2 (50/49). Live ecom: 50239 active 139 / total 141; 50240 active 134 / total 137 \u2014 emails_sent still 0 (watch NY 11\u201317). SaaS 50289 live with 22 enrolled. Queue 7. Capacity 200. Pages data.js still needs publish.",
+    "happening": [
+      "Ecommerce cutover LIVE: 50239 + 50240 after Dylan backfill of 99 uncontacted.",
+      "SaaS C1 Growth Leaders 50289 LIVE (22 enrolled, meetings A/B).",
+      "Legacy 50048 marked completed (0 active).",
+      "Capacity 10\u00d720=200; Prospector queue eligible=7."
     ],
-    not_happening: [
-      "No live send or delivered read for today. Remaining-to-capacity is unknown.",
-      "Human replies are observed zero. Qualified positive remains unknown.",
-      "Reply Intelligence and CRM weekday routines are paused.",
-      "EXP-MSG-001 is proposed, not activated. Do not judge copy on zero human replies.",
-      "LinkedIn, mass video, and lead magnets are not started. Paid ads is not the motion unless later added.",
-      "Prospecting has not filled the queue to scale."
+    "not_happening": [
+      "v2 emails_sent still 0 despite 273 active on ecom v2 \u2014 enrolled\u2260sent.",
+      "LI-C1 50224 still draft.",
+      "SaaS 50290 still draft gated.",
+      "Sent-today / remaining-to-capacity unknown.",
+      "Inbox warmup mix unread."
     ],
-    source: "seed 2026-09-14 (Analyst first-run pending)"
+    "source": "Salesforge get_sequence verify + Campaign Operator 2026-09-14 ~13:56Z"
   },
-
-  goals: {
-    year: {
-      label: "Year 2026",
-      north_star: "20% revenue growth, or keep working free until hit. No deadline. No ROAS.",
-      items: ["Efficiency is not scored as ROAS.", "Progress unknown until a revenue baseline is written."]
+  "goals": {
+    "year": {
+      "label": "Year 2026",
+      "north_star": "20% revenue growth, or keep working free until hit. No deadline. No ROAS.",
+      "items": [
+        "Not scored as ROAS."
+      ]
     },
-    quarter: {
-      label: "Q3 2026",
-      status: "Conversion visibility and untested channels, not the known send ceiling, are the operating review.",
-      items: ["Unblock delivered + remaining-to-capacity reads.", "Do not activate copy tests on zero human replies."]
+    "quarter": {
+      "label": "Q3 2026",
+      "status": "Get v2 + SaaS actually sending; refill queue; then judge copy.",
+      "items": [
+        "Confirm sends in NY window.",
+        "Fill queue toward 150\u2013200/day.",
+        "HOLD LI + 50290 + inbox ramp."
+      ]
     },
-    month: {
-      label: "September",
-      items: ["Analyst first-run. Remaining-to-capacity unknown. EXP-MSG-001 not activated."]
+    "month": {
+      "label": "September",
+      "items": [
+        "v2 cutover + SaaS live.",
+        "Capacity 200.",
+        "Publish dashboard data.js."
+      ]
     },
-    week: {
-      label: "Week of 2026-09-08",
-      items: ["Enable Analyst first-run. Do not judge copy on zero human replies."]
+    "week": {
+      "label": "Week of 2026-09-08",
+      "items": [
+        "Watch send lag.",
+        "SCALE queue fills to 50239/50240 only.",
+        "HOLD LI activate."
+      ]
     }
   },
-
-  capacity: {
-    mailboxes_active: 10,
-    per_mailbox_day: 20,
-    weekday_ceiling: 200,
-    usable_after_reserve: 160,
-    scale_target_day: 300,
-    gap: 100,
-    source: "Dylan 2026-09-14 · weekday production 10 × 20 = 200"
+  "capacity": {
+    "mailboxes_active": 10,
+    "per_mailbox_day": 20,
+    "weekday_ceiling": 200,
+    "usable_after_reserve": 160,
+    "scale_target_day": 300,
+    "gap": 100,
+    "source": "Salesforge list_mailboxes \u00b7 10\u00d720"
   },
-
-  inboxes: {
-    active: 10,
-    warmed: null,
-    warming: null,
-    new: null,
-    warmup_days: 14,
-    per_mailbox_day: 20,
-    source: "Dylan 2026-09-14 · active count only; warmup mix unread"
+  "inboxes": {
+    "active": 10,
+    "warmed": null,
+    "warming": null,
+    "new": null,
+    "warmup_days": 14,
+    "per_mailbox_day": 20,
+    "source": "warmup mix unread"
   },
-
-  funnel_baseline: {
-    control: "C1-N1 / 48153",
-    contacted: 41,
-    emails_sent: 68,
-    eligible_delivered: null,
-    salesforge_replies: 0,
-    human_replies_non_ooo: 0,
-    qualified_positive_replies: null,
-    booked_held: 0,
-    opportunities: null,
-    bounce: 1,
-    source: "Salesforge read-back 2026-09-13"
+  "funnel_baseline": {
+    "control": "C1-N1-v2 / 50239 + EXP-TACTIC-001-v2 / 50240",
+    "contacted": 41,
+    "emails_sent": 68,
+    "eligible_delivered": null,
+    "salesforge_replies": 0,
+    "human_replies_non_ooo": 1,
+    "qualified_positive_replies": null,
+    "booked_held": null,
+    "opportunities": null,
+    "bounce": 1,
+    "source": "Legacy 48153 cumulative send stats; v2/SaaS emails_sent still 0 on get_sequence analytics"
   },
-
-  campaigns: [
+  "campaigns": [
     {
-      id: "48153",
-      name: "C1-N1",
-      status: "live",
-      channel: "email",
-      contacted: 41,
-      sent: 68,
-      delivered: null,
-      replies: 0,
-      booked: 0,
-      bounce: 1,
-      insight: "Only observed control. Not replenishment-enabled. Delivered unread, so we cannot split deliverability vs copy. 0 human replies; do not judge messaging yet.",
-      url: "https://app.salesforge.ai",
-      source: "Salesforge read-back 2026-09-13"
+      "id": "50239",
+      "name": "C1-N1-v2",
+      "status": "live",
+      "channel": "email",
+      "contacted": 0,
+      "sent": 0,
+      "delivered": null,
+      "replies": 0,
+      "booked": null,
+      "bounce": 0,
+      "insight": "LIVE ecom control. activeEnrollment 139 / totalLead 141. emails_sent 0. 50/50 new enrolls with 50240.",
+      "url": "https://app.salesforge.ai",
+      "source": "get_sequence 2026-09-14"
+    },
+    {
+      "id": "50240",
+      "name": "EXP-TACTIC-001-v2",
+      "status": "live",
+      "channel": "email",
+      "contacted": 0,
+      "sent": 0,
+      "delivered": null,
+      "replies": 0,
+      "booked": null,
+      "bounce": 0,
+      "insight": "LIVE ecom challenger deposit-first. active 134 / total 137. emails_sent 0. TEST vs 50239 after sends.",
+      "url": "https://app.salesforge.ai",
+      "source": "get_sequence 2026-09-14"
+    },
+    {
+      "id": "50289",
+      "name": "C1-SaaS Growth Leaders",
+      "status": "live",
+      "channel": "email",
+      "contacted": 0,
+      "sent": 0,
+      "delivered": null,
+      "replies": 0,
+      "booked": null,
+      "bounce": 0,
+      "insight": "LIVE SaaS meetings offer (Dylan exact-yes). 22 enrolled. A/B work-free vs waive next month. NOT ecommerce.",
+      "url": "https://app.salesforge.ai",
+      "source": "get_sequence 2026-09-14"
+    },
+    {
+      "id": "48153",
+      "name": "C1-N1 (legacy in-flight)",
+      "status": "live",
+      "channel": "email",
+      "contacted": 41,
+      "sent": 68,
+      "delivered": null,
+      "replies": 0,
+      "booked": 0,
+      "bounce": 1,
+      "insight": "Legacy in-flight only. Operator: ~12 active left after uncontacted backfill to v2.",
+      "url": "https://app.salesforge.ai",
+      "source": "CO + prior SF analytics"
+    },
+    {
+      "id": "50048",
+      "name": "EXP-TACTIC-001 (legacy)",
+      "status": "completed",
+      "channel": "email",
+      "contacted": 0,
+      "sent": 0,
+      "delivered": null,
+      "replies": 0,
+      "booked": null,
+      "bounce": 0,
+      "insight": "COMPLETED after uncontacted backfill to v2. active 0 / completed 71.",
+      "url": "https://app.salesforge.ai",
+      "source": "get_sequence status=completed"
+    },
+    {
+      "id": "50224",
+      "name": "LI-C1",
+      "status": "draft",
+      "channel": "linkedin",
+      "contacted": 0,
+      "sent": 0,
+      "delivered": null,
+      "replies": 0,
+      "booked": null,
+      "bounce": 0,
+      "insight": "DRAFT \u2014 HOLD until Dylan yes.",
+      "url": "https://app.salesforge.ai",
+      "source": "CO"
+    },
+    {
+      "id": "50290",
+      "name": "SaaS Demand-Gen Hiring",
+      "status": "draft",
+      "channel": "email",
+      "contacted": 0,
+      "sent": 0,
+      "delivered": null,
+      "replies": 0,
+      "booked": null,
+      "bounce": 0,
+      "insight": "DRAFT gated. Do not enroll.",
+      "url": "https://app.salesforge.ai",
+      "source": "CO"
+    },
+    {
+      "id": "50027",
+      "name": "EXP-MSG-001 (HOLD)",
+      "status": "draft",
+      "channel": "email",
+      "contacted": 0,
+      "sent": 0,
+      "delivered": null,
+      "replies": 0,
+      "booked": null,
+      "bounce": 0,
+      "insight": "Held/superseded by TACTIC-v2.",
+      "url": "https://app.salesforge.ai",
+      "source": "CO"
     }
   ],
-
-  motion_surface: [
+  "motion_surface": [
     {
-      id: "email_outbound",
-      label: "Email outbound",
-      kind: "channel",
-      status: "live",
-      note: "Only live motion. Control C1-N1 / 48153.",
-      url: "https://app.salesforge.ai"
+      "id": "email_ecommerce",
+      "label": "Email ecommerce",
+      "kind": "channel",
+      "status": "live",
+      "note": "50239+50240 50/50.",
+      "url": "https://app.salesforge.ai"
     },
     {
-      id: "linkedin",
-      label: "LinkedIn",
-      kind: "channel",
-      status: "not_started",
-      note: "LI copy still needs Sep-8 contract cleanup before activate.",
-      url: "https://dylang001.github.io/orchidea-ops-report/#radar/radar-multichannel"
+      "id": "email_saas",
+      "label": "Email SaaS",
+      "kind": "channel",
+      "status": "live",
+      "note": "50289 live meetings offer. 50290 gated."
     },
     {
-      id: "mass_video",
-      label: "Mass video",
-      kind: "channel",
-      status: "not_started",
-      note: "Not started. Untested channel is a bottleneck and an option.",
-      url: "https://dylang001.github.io/orchidea-ops-report/#radar/radar-video-sequence"
+      "id": "linkedin",
+      "label": "LinkedIn",
+      "kind": "channel",
+      "status": "proposed",
+      "note": "LI-C1 50224 HOLD until Dylan yes."
     },
     {
-      id: "lead_magnets",
-      label: "Lead magnets",
-      kind: "channel",
-      status: "not_started",
-      note: "Not started. No magnet in this snapshot.",
-      url: "https://dylang001.github.io/orchidea-ops-report/#radar/radar-lead-magnet-n42k"
+      "id": "mass_video",
+      "label": "Mass video",
+      "kind": "channel",
+      "status": "not_started",
+      "note": "After sends are real."
     },
     {
-      id: "paid_ads",
-      label: "Paid ads",
-      kind: "channel",
-      status: "not_started",
-      note: "Explicitly not the motion unless later added."
+      "id": "lead_magnets",
+      "label": "Lead magnets",
+      "kind": "channel",
+      "status": "not_started",
+      "note": "Score on qualified positives."
     },
     {
-      id: "offer",
-      label: "Offer",
-      kind: "lever",
-      status: "live",
-      note: "Sep 8: 20% revenue growth, or keep working free until hit."
+      "id": "offer_ecom",
+      "label": "Offer ecommerce",
+      "kind": "lever",
+      "status": "live",
+      "note": "\u226520% return / 90d or work free."
     },
     {
-      id: "guarantee",
-      label: "Guarantee",
-      kind: "lever",
-      status: "live",
-      note: "Keep working free until 20% growth is hit. No deadline."
+      "id": "offer_saas",
+      "label": "Offer SaaS meetings",
+      "kind": "lever",
+      "status": "live",
+      "note": "90d meeting target; A work-free / B waive month."
     },
     {
-      id: "messaging_cta",
-      label: "Messaging / CTA",
-      kind: "lever",
-      status: "proposed",
-      note: "EXP-MSG-001 · Sep 8 verbatim + chat CTA. Proposed, not activated.",
-      url: "https://dylang001.github.io/orchidea-ops-report/#radar/radar-cta-hybrid"
+      "id": "messaging_cta",
+      "label": "Messaging / CTA",
+      "kind": "lever",
+      "status": "live",
+      "note": "Live tests: deposit-first vs offer-led (ecom) + SaaS A/B."
     }
   ],
-
-  fleet: [
+  "fleet": [
     {
-      name: "Prospecting",
-      id: "2556136",
-      job: "Build eligible pipeline",
-      mode: "prepare",
-      lifecycle: "live",
-      kpi: "Eligible pipeline depth vs scale",
-      target: "eligible pipeline",
-      actual: null,
-      working: null,
-      last_outcome: "queue depth below scale",
-      paused_routines: [],
-      status: "queue depth below scale",
-      url: null
+      "name": "Prospecting",
+      "id": "2556136",
+      "job": "Build eligible pipeline",
+      "mode": "prepare",
+      "lifecycle": "live",
+      "kpi": "Eligible vs 150\u2013200/day",
+      "target": "\u2265150\u2013200/day",
+      "actual": "eligible 7",
+      "working": true,
+      "last_outcome": "queue 7; SCALE fills to v2 only",
+      "paused_routines": [],
+      "status": "supply still binding",
+      "url": null
     },
     {
-      name: "Messaging",
-      id: "2786717",
-      job: "Copy and enroll",
-      mode: "audit-first",
-      lifecycle: "live",
-      kpi: "Qualified positive reply rate",
-      target: "qualified positive reply rate",
-      actual: null,
-      working: null,
-      last_outcome: "EXP-MSG-001 proposed, not activated",
-      paused_routines: [],
-      status: "EXP-MSG-001 proposed, not activated",
-      url: null
+      "name": "Messaging",
+      "id": "2786717",
+      "job": "Copy and experiments",
+      "mode": "audit-first",
+      "lifecycle": "live",
+      "kpi": "Qualified positive reply rate",
+      "target": "qpos rate",
+      "actual": null,
+      "working": null,
+      "last_outcome": "ecom v2 + SaaS 50289 live",
+      "paused_routines": [],
+      "status": "live tests running",
+      "url": null
     },
     {
-      name: "Campaign Operator",
-      id: "2818152",
-      job: "Approved enroll / pause / create",
-      mode: "DRAFT_ONLY",
-      lifecycle: "draft",
-      kpi: "Approved enroll / pause / create executed",
-      target: "approved enroll/pause/create",
-      actual: null,
-      working: null,
-      last_outcome: "no writes without Dylan change-set",
-      paused_routines: [],
-      status: "no writes without Dylan change-set",
-      url: "https://app.salesforge.ai"
+      "name": "Campaign Operator",
+      "id": "2818152",
+      "job": "Approved enroll/pause/create",
+      "mode": "apply on Dylan yes",
+      "lifecycle": "live",
+      "kpi": "Approved writes executed",
+      "target": "change-sets applied",
+      "actual": "99 moved to v2; 50289 launched",
+      "working": true,
+      "last_outcome": "backfill + SaaS live",
+      "paused_routines": [],
+      "status": "hand-in-hand",
+      "url": "https://app.salesforge.ai"
     },
     {
-      name: "Reply Intelligence",
-      id: "2822878",
-      job: "Classify + draft",
-      mode: "draft-only",
-      lifecycle: "paused",
-      kpi: "Replies classified and drafts ready same day",
-      target: "classify + draft",
-      actual: null,
-      working: null,
-      last_outcome: "weekday routine paused",
-      paused_routines: ["weekday routine"],
-      status: "weekday routine paused",
-      url: null
+      "name": "Reply Intelligence",
+      "id": "2822878",
+      "job": "Classify + draft",
+      "mode": "draft-only",
+      "lifecycle": "paused",
+      "kpi": "Same-day classify+draft",
+      "target": "classify+draft",
+      "actual": null,
+      "working": null,
+      "last_outcome": "weekday paused",
+      "paused_routines": [
+        "weekday routine"
+      ],
+      "status": "paused",
+      "url": null
     },
     {
-      name: "CRM Data Nerd",
-      id: "2908860",
-      job: "Keep Attio as truth",
-      mode: "preview-then-apply",
-      lifecycle: "paused",
-      kpi: "Attio records matching outbound truth",
-      target: "Attio truth",
-      actual: null,
-      working: null,
-      last_outcome: "weekday routine paused",
-      paused_routines: ["weekday routine"],
-      status: "weekday routine paused",
-      url: "https://app.attio.com"
+      "name": "CRM Data Nerd",
+      "id": "2908860",
+      "job": "Attio truth",
+      "mode": "preview-then-apply",
+      "lifecycle": "paused",
+      "kpi": "Attio match outbound",
+      "target": "Attio truth",
+      "actual": null,
+      "working": null,
+      "last_outcome": "weekday paused",
+      "paused_routines": [
+        "weekday routine"
+      ],
+      "status": "paused",
+      "url": "https://app.attio.com"
     },
     {
-      name: "Outbound Analyst",
-      id: "2929809",
-      job: "Daily / weekly / monthly + this dashboard",
-      mode: "live",
-      lifecycle: "live",
-      kpi: "Provider read-back written to data.js",
-      target: "daily/weekly/monthly + dashboard",
-      actual: null,
-      working: null,
-      last_outcome: "building · first-run pending",
-      paused_routines: [],
-      status: "building",
-      url: "https://dylang001.github.io/orchidea-ops-report/"
+      "name": "Outbound Analyst",
+      "id": "2929809",
+      "job": "Dashboard + reports",
+      "mode": "live",
+      "lifecycle": "live",
+      "kpi": "data.js current",
+      "target": "Pages + brain current",
+      "actual": "brain refreshed; Pages publish blocked",
+      "working": true,
+      "last_outcome": "refresh off CO 13:56Z facts",
+      "paused_routines": [],
+      "status": "live",
+      "url": "https://dylang001.github.io/orchidea-ops-report/"
     }
   ],
-
-  paused_routines: [
-    { owner: "Reply Intelligence", routine: "weekday routine", status: "paused" },
-    { owner: "CRM Data Nerd", routine: "weekday routine", status: "paused" },
-    { owner: "Alfred", routine: "weekly / monthly / quarterly reviews", status: "paused" }
-  ],
-
-  open_items: [
-    "Get Analyst first-run live so today’s sends, remaining-to-capacity, and delivered stop being unknown",
-    "Keep EXP-MSG-001 proposed until there are human replies to judge. Do not activate on zero.",
-    "Decide when to enable Reply + CRM weekday routines (ops pause, not a copy test)",
-    "Inbox warmup mix is unread. Do not plan new-account capacity until warmed / warming / new is filled.",
-    "LI copy still needs Sep-8 contract cleanup before that channel is a real test"
-  ],
-
-  bottlenecks: [
+  "paused_routines": [
     {
-      rank: 1,
-      type: "conversion",
-      item: "Journey blind at Delivered; human replies observed zero",
-      gap: "Conversion, not the known send ceiling. We cannot split deliverability vs copy because eligible delivered is unknown, and human replies are observed zero after send.",
-      journey: "Contacted 41 → Sent 68 → Delivered unknown → Replies 0 → Booked 0",
-      unblock: "Analyst first-run must read eligible delivered (and bounces) so the x-ray has a next known step.",
-      test: "Do not run EXP-MSG-001 yet. A copy test on zero human replies and unknown delivered teaches nothing."
+      "owner": "Reply Intelligence",
+      "routine": "weekday routine",
+      "status": "paused"
     },
     {
-      rank: 2,
-      type: "ops",
-      item: "Today’s remaining-to-capacity is unknown",
-      gap: "Sends today are unread, so remaining-to-capacity cannot be computed. Dylan already knows the production math (inboxes × per-mailbox). The operating number is how much of today’s capacity is left.",
-      journey: "Supply / send step: volume for today is not on the board.",
-      unblock: "Analyst reads Salesforge sends today. Remaining = weekday production − sends (null until both exist).",
-      test: "Not a channel test. This is a telemetry unblock."
+      "owner": "CRM Data Nerd",
+      "routine": "weekday routine",
+      "status": "paused"
     },
     {
-      rank: 3,
-      type: "channel",
-      item: "Untested channels while email is the only live motion",
-      gap: "LinkedIn, mass video, and lead magnets are not started. Paid ads is explicitly not the motion unless later added. The test surface is idle except email + the live offer/guarantee.",
-      journey: "Before Contacted: other ways to fill and convert the journey are untried.",
-      unblock: "Finish Sep-8 LI copy cleanup before LinkedIn can be a real test. Treat mass video and magnets as ranked next bets, not decoration.",
-      test: "EXP-MSG-001 is the only proposed email test. Do not confuse ‘proposed’ with ‘running’."
-    },
-    {
-      rank: 4,
-      type: "supply",
-      item: "Queue depth far below scale",
-      gap: "Prospecting is live but has not filled eligible pipeline to the scale target. Actual pipeline depth is unknown until a read-back.",
-      journey: "Before Contacted: the top of the OS is thin.",
-      unblock: "Read Prospecting KPI (eligible pipeline depth). Then decide whether supply or conversion is the tighter constraint.",
-      test: "Do not add inboxes to ‘fix’ conversion. Warmup mix is also unknown."
-    },
-    {
-      rank: 5,
-      type: "ops",
-      item: "Paused Reply/CRM weekday routines + DRAFT_ONLY operator",
-      gap: "Reply Intelligence and CRM Data Nerd are paused. Campaign Operator writes nothing without a Dylan change-set. Even if replies arrive, classification and Attio truth will lag.",
-      journey: "Replies → Booked: the handoff layer is parked.",
-      unblock: "Decide when to enable Reply + CRM weekday routines. Keep Operator in draft until there is an approved change-set.",
-      test: "Enabling paused routines is an ops decision, not EXP-MSG-001."
+      "owner": "Alfred",
+      "routine": "weekly / monthly / quarterly reviews",
+      "status": "paused"
     }
   ],
-
-  experiments: [
+  "open_items": [
+    "Publish data.js to GitHub Pages (cloud usage / GH login blocked)",
+    "v2 + SaaS emails_sent still 0 \u2014 watch NY 11\u201317 send window",
+    "Eligible queue 7 vs 150\u2013200/day \u2014 SCALE fills to 50239/50240 only",
+    "LI-C1 50224 HOLD until Dylan yes",
+    "SaaS 50290 draft gated",
+    "Sent-today / remaining-to-capacity unknown",
+    "Inbox warmup mix unread",
+    "HOLD mailbox 20\u219225\u219230 ramp",
+    "Reply + CRM weekday routines paused"
+  ],
+  "bottlenecks": [
     {
-      id: "EXP-MSG-001",
-      status: "proposed_not_activated",
-      control: "C1-N1/48153",
-      note: "Sep 8 verbatim + chat CTA. Do not activate until human replies exist to judge.",
-      url: "https://dylang001.github.io/orchidea-ops-report/#radar/radar-cta-hybrid"
+      "rank": 1,
+      "type": "execution",
+      "item": "Live sequences enrolled but not sending",
+      "gap": "273 active on ecom v2 + 22 SaaS with emails_sent 0.",
+      "journey": "Enrolled \u2192 Sent dark.",
+      "unblock": "Confirm sender/window health in NY business hours.",
+      "test": "Do not judge 50239 vs 50240 until first-touch sends."
+    },
+    {
+      "rank": 2,
+      "type": "supply",
+      "item": "Queue 7 vs 150\u2013200/day",
+      "gap": "Thin eligible pipeline.",
+      "journey": "Before Contacted.",
+      "unblock": "Prospector fill; CO enrolls ecom to 50239/50240 only.",
+      "test": "Not a copy test."
+    },
+    {
+      "rank": 3,
+      "type": "structural",
+      "item": "Capacity 200 vs 300",
+      "gap": "Week-1 done; ramp held.",
+      "journey": "Send capacity.",
+      "unblock": "HOLD 20\u219225\u219230 until sends+queue healthy.",
+      "test": "Scale horizontally later."
+    },
+    {
+      "rank": 4,
+      "type": "ops",
+      "item": "LI + 50290 gated; Reply/CRM paused",
+      "gap": "Channels and triage lag.",
+      "journey": "New motions + Replies\u2192Booked.",
+      "unblock": "Dylan yes on LI/50290 when ready; decide Reply/CRM enable.",
+      "test": "One variable at a time."
     }
   ],
-
-  daily: {
-    as_of: "2026-09-14",
-    sends: null,
-    delivered: null,
-    remaining_to_capacity: null,
-    capacity_used: null,
-    anomalies: [],
-    fleet_blockers_changed: [],
-    decisions_needed: [
-      "Enable Analyst first-run so sends, remaining-to-capacity, and delivered stop being unknown",
-      "Do not activate EXP-MSG-001 on zero human replies",
-      "Decide when to enable Reply/CRM paused routines"
+  "experiments": [
+    {
+      "id": "EXP-TACTIC-001-v2",
+      "status": "active",
+      "control": "C1-N1-v2/50239",
+      "note": "Live 50/50. active 134. TEST after sends.",
+      "url": "https://app.salesforge.ai"
+    },
+    {
+      "id": "C1-SaaS-50289",
+      "status": "active",
+      "control": null,
+      "note": "Live SaaS meetings A/B. 22 enrolled.",
+      "url": "https://app.salesforge.ai"
+    },
+    {
+      "id": "EXP-MSG-001",
+      "status": "held_superseded",
+      "control": "was 48153",
+      "note": "Do not activate.",
+      "url": null
+    },
+    {
+      "id": "LI-C1",
+      "status": "draft_hold",
+      "control": null,
+      "note": "HOLD until Dylan yes.",
+      "url": "https://app.salesforge.ai"
+    }
+  ],
+  "daily": {
+    "as_of": "2026-09-14",
+    "sends": null,
+    "delivered": null,
+    "remaining_to_capacity": null,
+    "capacity_used": null,
+    "anomalies": [
+      "ecom v2 273 active / emails_sent 0",
+      "SaaS 50289 22 enrolled / emails_sent 0",
+      "Pages data.js still seed-stale until publish"
     ],
-    notes: [
-      "Baseline seed. Analyst will overwrite with live provider read-back."
+    "fleet_blockers_changed": [
+      "99 uncontacted moved to v2",
+      "50048 completed",
+      "50289 SaaS live"
     ],
-    source: "seed 2026-09-14 (Analyst first-run pending)"
+    "decisions_needed": [
+      "Publish path for data.js (GH login / manual commit)",
+      "LI-C1 activate or keep HOLD",
+      "50290 keep gated?",
+      "When to enable Reply/CRM routines"
+    ],
+    "notes": [
+      "KEEP: v2 ecom + SaaS 50289",
+      "KILL: none",
+      "SCALE: queue fills \u2192 50239/50240 only",
+      "HOLD: LI activate + inbox ramp"
+    ],
+    "source": "SF verify + CO 13:56Z"
   },
-
-  weekly: {
-    label: "Week of 2026-09-08",
-    keep: [],
-    kill: [],
-    scale: [],
-    test: ["EXP-MSG-001 (proposed, not activated)"],
-    insights: [
-      "Only one observed campaign this week: C1-N1 / 48153. 41 contacted, 68 sent, delivered unknown, 0 human replies, 0 booked, 1 bounce.",
-      "The journey is blind at Delivered, then red at Replies. That is the conversion bottleneck, not a 200 send-ceiling slide.",
-      "Test surface is mostly idle: email + offer/guarantee are live; messaging/CTA is proposed; LinkedIn, mass video, lead magnets, and paid ads are not started.",
-      "Keep / kill / scale stay empty until human replies exist to judge. EXP-MSG-001 must not be treated as a running test."
+  "weekly": {
+    "label": "Week of 2026-09-08",
+    "keep": [
+      "50239/50240 ecom cutover",
+      "SaaS 50289"
     ],
-    notes: ["Insufficient human replies to judge copy."],
-    source: "Salesforge read-back 2026-09-13"
+    "kill": [],
+    "scale": [
+      "Prospector fills \u2192 ecom v2 only"
+    ],
+    "test": [
+      "50239 vs 50240 after sends",
+      "SaaS 50289 A/B after sends"
+    ],
+    "insights": [
+      "Portfolio now: ecom v2 + SaaS live; legacy 50048 done; 48153 draining.",
+      "Binding issues: send lag + thin queue \u2014 not missing cutover.",
+      "Do not activate LI until Dylan exact-yes."
+    ],
+    "notes": [
+      "Insufficient sends to judge copy."
+    ],
+    "source": "Analyst 2026-09-14"
   },
-
-  monthly: {
-    label: "September 2026",
-    trends: [],
-    remaining_to_capacity: null,
-    sends: null,
-    capacity_used: null,
-    insights: [
-      "The goal is 20% revenue growth, or keep working free until hit. Progress is unknown until a revenue baseline is in this file. This is not a ROAS score.",
-      "Remaining-to-capacity over the month is unknown until Analyst reads volume. Production math (10 inboxes × 20/day) is how capacity is made, not the monthly headline.",
-      "We have learned that the control is live and silent: 0 human replies, delivered unread. Copy tests are not yet informative.",
-      "Next bets sit on the test surface: do not activate EXP-MSG-001 yet; LI needs contract cleanup; mass video and lead magnets are untried."
+  "monthly": {
+    "label": "September 2026",
+    "trends": [],
+    "remaining_to_capacity": null,
+    "sends": null,
+    "capacity_used": null,
+    "insights": [
+      "Two live motions: ecommerce v2 test + SaaS meetings offer.",
+      "Capacity 200 known; remaining-to-capacity unread.",
+      "Publish dashboard so Dylan\u2019s daily review matches Salesforge."
     ],
-    goals: [
+    "goals": [
       {
-        id: "revenue_growth_20",
-        label: "20% revenue growth, or keep working free until hit",
-        target: "20% revenue growth",
-        progress: null,
-        baseline: null,
-        status: "unknown",
-        note: "No deadline. Not scored as ROAS. Analyst fills progress when revenue is readable."
+        "id": "revenue_growth_20",
+        "label": "20% revenue growth, or keep working free until hit",
+        "target": "20% revenue growth",
+        "progress": null,
+        "baseline": null,
+        "status": "unknown",
+        "note": "No deadline. Not ROAS."
       }
     ],
-    next_bets: [
-      "Analyst first-run: sends today, remaining-to-capacity, eligible delivered, inbox warmup mix",
-      "Hold EXP-MSG-001 as proposed until human replies exist",
-      "Finish Sep-8 LinkedIn copy cleanup before that channel is a test",
-      "Rank mass video vs lead magnets as the next untested motion. Do not pretend they are running."
+    "next_bets": [
+      "Confirm first v2 + SaaS sends",
+      "Refill queue to 150\u2013200/day",
+      "Publish data.js",
+      "HOLD LI + 50290 + inbox ramp"
     ],
-    notes: ["Conversion visibility and untested channels dominate. Structural 10 × 20 production is known; remaining-to-capacity is not."],
-    source: "seed 2026-09-14"
-  },
-
-  gtm_radar: {
+    "notes": [
+      "Execution + supply dominate."
+    ],
+    "source": "Analyst 2026-09-14"
+  }
+,
+  "gtm_radar": {
     generated_on: "2026-09-14",
     timezone: "Africa/Johannesburg",
     source: "Research seed 2026-09-14. Research bot overwrites gtm_radar only.",
@@ -656,4 +762,5 @@ window.ORCHIDEA_OPS = {
       }
     ]
   }
-};
+}
+;
