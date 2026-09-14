@@ -1,6 +1,6 @@
 # Orchidea Outbound & GTM Ops Report
 
-Private exec dashboard for Dylan Angloher. Open it to see system status, bottlenecks, and what to do next.
+Private exec dashboard for Dylan Angloher. Open it to see bottlenecks, remaining-to-capacity, the journey x-ray, and what to test next.
 
 The UI never hardcodes metrics. It renders `window.ORCHIDEA_OPS` from [`data.js`](data.js). The Outbound Analyst bot overwrites that file on a schedule.
 
@@ -11,31 +11,33 @@ This is outbound GTM ops, not ecommerce ads. There is no Salesforce surface. Qua
 From the repo root:
 
 ```bash
-python3 -m http.server 43147 --bind 127.0.0.1
+python3 -m http.server 43147 --bind 0.0.0.0
 ```
 
 Then open [http://127.0.0.1:43147](http://127.0.0.1:43147).
 
 ## What you should see
 
-Orchidea mark in the header. Sticky strip: **send ceiling · sends today · human replies · capacity gap**. Tabs: **Overview | Weekly | Monthly | Fleet | Focus**.
+Orchidea mark (black quatrefoil) in the header. Sticky strip: **sends today · remaining to today’s capacity · human replies · inboxes (warmup mix)**. Tabs: **Overview | Weekly | Monthly | Fleet | Focus**.
 
 | Tab | Reads from | Shows |
 | --- | --- | --- |
-| Overview | `exec`, `capacity`, `funnel_baseline`, `bottlenecks`, `daily.decisions_needed` | Situation, capacity vs 300, funnel chart, happening / not, bottlenecks, do next |
-| Weekly | `funnel_baseline`, `weekly` | Conversion ladder. Keep/kill/scale only if they have items |
-| Monthly | `capacity`, `experiments`, `monthly.trends` | Ceiling vs target, experiment ledger |
-| Fleet | `fleet[]` | Six bots. No Qualification |
-| Focus | `open_items`, `bottlenecks` | Why it is stuck + do next |
+| Overview | `exec`, `inboxes`, `capacity`, `funnel_baseline`, `daily`, `bottlenecks` | Situation, remaining-to-capacity + inbox mix, pipeline x-ray, happening / not, ranked bottlenecks, do next |
+| Weekly | `weekly.insights`, `campaigns[]`, `motion_surface[]`, `funnel_baseline`, `weekly` keep/kill/scale/test | Week takeaways, journey, campaign x-ray, test board. Keep/kill/scale only if they have items |
+| Monthly | `monthly.goals[]`, `monthly.remaining_to_capacity`, `motion_surface[]`, `experiments`, `monthly.insights`, `monthly.next_bets` | Goal tracking (20% growth / keep working free — not ROAS), remaining-to-capacity, test ledger, next bets |
+| Fleet | `fleet[]` | Six bots: job, KPI, actual, working?, live/paused/draft, last outcome. No Qualification |
+| Focus | `bottlenecks[]` (`gap`, `journey`, `unblock`, `test`), `open_items` | Consultative gap cards + do next |
 
 Timezone is always **Africa/Johannesburg**. Commercial offer is one line, not a metric.
 
+Capacity is shown as **sends today vs remaining to today’s capacity**. How capacity is produced (N inboxes × per-mailbox, 14-day warmup for new accounts) is a breakdown, not the headline. Do not lead with “send ceiling 200”.
+
 ## Refresh contract (Outbound Analyst)
 
-Overwrite `data.js`. Do not edit `index.html`, `app.js`, or `styles.css` to change a number.
+Overwrite **only** `data.js`. Do not edit `index.html`, `app.js`, or `styles.css` to change a number.
 
 1. Read providers. Identity is Attio. Execution is Salesforge. Approvals are Notion.
-2. Rebuild `window.ORCHIDEA_OPS`. Keep the same top-level keys, including `exec`.
+2. Rebuild `window.ORCHIDEA_OPS`. Keep the same top-level keys (including `exec`, `inboxes`, `campaigns`, `motion_surface`).
 3. Set `meta.generated_on` and `daily.as_of` to the Johannesburg calendar date of the pull.
 4. Put a `source` string on every numeric cluster.
 5. Do not add Qualification back. Do not invent live metrics.
@@ -51,7 +53,30 @@ Overwrite `data.js`. Do not edit `index.html`, `app.js`, or `styles.css` to chan
 
 Never coerce a missing Salesforge / Attio / Notion read to `0`. Funnel steps may be `null`. Contacted ≠ enrolled ≠ sent ≠ delivered ≠ replied. Configuration is not an outcome.
 
-Weekday send ceiling is **200** (10 × 20) vs scale target **300**. Gap **100**.
+Do **not** invent today’s sends, delivered, inbox warmup mix (`inboxes.warmed` / `warming` / `new`), or campaign performance. Remaining-to-capacity stays unknown until `daily.sends` (or `daily.remaining_to_capacity`) is numeric.
+
+### Analyst-fillable keys (keep stable)
+
+Existing top-level keys stay: `meta`, `exec`, `goals`, `capacity`, `funnel_baseline`, `fleet`, `paused_routines`, `open_items`, `bottlenecks`, `experiments`, `daily`, `weekly`, `monthly`.
+
+| Key | Fill when you have a read | Notes |
+| --- | --- | --- |
+| `inboxes.active` | mailbox count | Seeded 10 |
+| `inboxes.warmed` / `warming` / `new` | warmup mix | Stay **null** until read. Never invent a split |
+| `inboxes.warmup_days` | policy | Seeded 14 |
+| `inboxes.per_mailbox_day` | send cap per box | Seeded 20 |
+| `campaigns[]` | observed campaigns only | Omit others. Do not fake a portfolio |
+| `motion_surface[]` (alias `tests[]`) | channel + offer levers | `status`: `tested` \| `live` \| `proposed` \| `not_started` |
+| `daily.sends` / `daily.delivered` / `daily.remaining_to_capacity` | today | Remaining also derives as ceiling − sends when both numeric |
+| `weekly.insights[]` | consultative bullets | Falls back to `weekly.notes` |
+| `monthly.goals[]` | goal tracking | `progress` / `baseline` stay null until revenue is readable. Not ROAS |
+| `monthly.sends` / `monthly.remaining_to_capacity` / `monthly.capacity_used` | month volume | Stay null until read |
+| `monthly.insights[]` / `monthly.next_bets[]` | takeaways + next tests | |
+| `fleet[].kpi` | KPI the bot is supposed to track | `actual` and `working` stay null until read-back |
+| `fleet[].lifecycle` | `live` \| `paused` \| `draft` | Operational status, not a KPI |
+| `bottlenecks[].gap` / `journey` / `unblock` / `test` | Focus copy | `item` / `type` / `rank` stay required |
+
+`capacity.weekday_ceiling` / `gap` / `scale_target_day` remain for production math. The UI does not hero the ceiling.
 
 ## Deploy
 
@@ -59,7 +84,7 @@ Static site. No build step.
 
 **Live URL:** [https://dylang001.github.io/orchidea-ops-report/](https://dylang001.github.io/orchidea-ops-report/)
 
-Hosted on GitHub Pages from [`dylang001/orchidea-ops-report`](https://github.com/dylang001/orchidea-ops-report) (`main`, site root). `robots.txt` is `Disallow: /` and the HTML is `noindex`. Each page load cache-busts `data.js` with `?t=` + `Date.now()`.
+Hosted on GitHub Pages from [`dylang001/orchidea-ops-report`](https://github.com/dylang001/orchidea-ops-report) (`main`, site root). `robots.txt` is `Disallow: /` and the HTML is `noindex`. Bump the `?v=` query on `app.js` / `styles.css` after a UI change so browsers do not keep a stale report. `data.js` is loaded with `Date.now()` cache-bust, then `app.js`.
 
 **Analyst refresh:** overwrite **only** `data.js` on that repo's `main` and push. Do not invent metrics. Do not paste secrets. `vercel.json` (if you also git-connect Vercel) sets `Cache-Control: no-cache` on `data.js`. Do not use Vercel `cleanUrls` — it 404'd `/` while `/data.js` still served.
 
@@ -67,4 +92,4 @@ Do not commit tokens. Do not paste Salesforge / Attio / Notion secrets into `dat
 
 ## Seed snapshot
 
-Baseline `as_of` **2026-09-14**. Ceiling updated to 200. Qualification removed from fleet. Funnel baseline from Salesforge read-back 2026-09-13 (`eligible_delivered` and `qualified_positive_replies` remain `null`).
+Baseline `as_of` **2026-09-14**. Funnel from Salesforge read-back 2026-09-13 (`eligible_delivered` and `qualified_positive_replies` remain `null`). Inbox warmup mix unread. Today’s sends unread. One observed campaign: C1-N1 / 48153. EXP-MSG-001 proposed, not activated. Qualification removed from fleet.
