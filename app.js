@@ -107,7 +107,7 @@
     const missing = stages.filter((s) => isMissing(s.v)).map((s) => s.label);
     const zeros = stages.filter((s) => !isMissing(s.v) && Number(s.v) === 0).map((s) => s.label);
     const stuck = missing[0] || zeros[0] || "";
-    const chartH = 140;
+    const chartH = 120;
 
     const known = stages.map((s) => (isMissing(s.v) ? 0 : Number(s.v)));
     const max = Math.max(1, ...known);
@@ -122,10 +122,10 @@
         conv = "from last " + rate(s.v, prev);
       }
       const h = missingV
-        ? 64
+        ? 56
         : zero
-          ? 24
-          : Math.max(28, Math.round((Number(s.v) / max) * chartH));
+          ? 20
+          : Math.max(24, Math.round((Number(s.v) / max) * 120));
       const barCls = ["j-bar", missingV ? "is-unknown" : "", zero ? "is-zero" : ""]
         .filter(Boolean).join(" ");
       const stepCls = ["j-step", missingV ? "is-unknown" : "", zero ? "is-zero" : "", s.label === stuck ? "is-stuck" : ""]
@@ -286,7 +286,7 @@
         <article class="tile span-8 accent-conv">
           <p class="tile-kicker">Journey</p>
           <h2>Where the control dies</h2>
-          <p class="lede">Hatched is unread. Red is observed zero. Click a step.</p>
+          <p class="lede">Click a step for definition and source.</p>
           ${funnelViz(d)}
         </article>
         <article class="tile span-4 accent-ops">
