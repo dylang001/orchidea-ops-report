@@ -38,9 +38,63 @@
   };
 
   const fleetState = (b) => {
+    const life = (b.lifecycle || "").toLowerCase();
+    if (life === "live" || life === "paused" || life === "draft") return life;
     if ((b.paused_routines || []).length) return "paused";
     return modeClass(b.mode);
   };
+
+  function inboxesOf(d) {
+    const ib = d.inboxes || {};
+    const cap = d.capacity || {};
+    return {
+      active: isMissing(ib.active) ? cap.mailboxes_active : ib.active,
+      warmed: ib.warmed,
+      warming: ib.warming,
+      new: ib.new,
+      warmup_days: isMissing(ib.warmup_days) ? 14 : ib.warmup_days,
+      per_mailbox_day: isMissing(ib.per_mailbox_day) ? cap.per_mailbox_day : ib.per_mailbox_day,
+      source: ib.source || cap.source
+    };
+  }
+
+  function remainingToday(d) {
+    const day = d.daily || {};
+    if (!isMissing(day.remaining_to_capacity)) return day.remaining_to_capacity;
+    const cap = (d.capacity || {}).weekday_ceiling;
+    const sends = day.sends;
+    if (isMissing(sends) || isMissing(cap)) return null;
+    return Math.max(0, Number(cap) - Number(sends));
+  }
+
+  function motionOf(d) {
+    const rows = d.motion_surface || d.tests;
+    return Array.isArray(rows) ? rows : [];
+  }
+
+  function journeyStages(fun) {
+    return [
+      { label: "Contacted", v: fun.contacted },
+      { label: "Sent", v: fun.emails_sent },
+      { label: "Delivered", v: fun.eligible_delivered },
+      { label: "Replies", v: fun.human_replies_non_ooo },
+      { label: "Booked", v: fun.booked_held }
+    ];
+  }
+
+  function journeyCallout(stages) {
+    const missing = stages.filter((s) => isMissing(s.v)).map((s) => s.label);
+    const zeros = stages.filter((s) => !isMissing(s.v) && Number(s.v) === 0).map((s) => s.label);
+    if (!missing.length && !zeros.length) return "";
+    const bits = [];
+    if (missing.length) {
+      bits.push(`Hatched = unread (${missing.join(", ")}). The x-ray cannot locate the bottleneck past a blind step.`);
+    }
+    if (zeros.length) {
+      bits.push(`Red = observed zero (${zeros.join(", ")}). Downstream is starved.`);
+    }
+    return `<div class="journey-callout">${esc(bits.join(" "))}</div>`;
+  }
 
   function hBars(rows, maxHint) {
     const numeric = rows
@@ -77,29 +131,127 @@
         </div>
         <div class="fv-n">${val(s.v)}</div>
         <div class="fv-l">${esc(s.label)}</div>
-        <div class="fv-c">${esc(conv)}</div>
+        <div class="fv-c">${i === 0 ? "start" : `← ${esc(conv)}`}</div>
       </div>`;
-    }).join("")}</div>`;
+    }).join("")}</div>
+    <div class="funnel-legend">
+      <span><i class="lg-navy"></i> Count</span>
+      <span><i class="lg-hatch"></i> Unknown</span>
+      <span><i class="lg-red"></i> Observed zero</span>
+      <span>Conversion is the rate from the previous step</span>
+    </div>`;
   }
 
-  function gauge(current, target, label) {
-    const missing = isMissing(current) || isMissing(target) || !target;
-    const pct = missing ? 0 : Math.min(100, (Number(current) / Number(target)) * 100);
-    const r = 42;
-    const c = 2 * Math.PI * r;
-    const dash = missing ? 0 : (pct / 100) * c;
-    return `<div class="gauge">
-      <svg viewBox="0 0 108 108" width="108" height="108" aria-hidden="true">
-        <circle cx="54" cy="54" r="${r}" fill="none" stroke="#EEF1EE" stroke-width="10"/>
-        <circle cx="54" cy="54" r="${r}" fill="none" stroke="#FF7420" stroke-width="10"
-          stroke-linecap="round" stroke-dasharray="${dash} ${c}"
-          transform="rotate(-90 54 54)"/>
-      </svg>
-      <div class="gauge-mid">
-        <strong>${missing ? `<span class="unknown">${UNKNOWN}</span>` : `${Math.round(pct)}%`}</strong>
-        <span>${esc(label)}</span>
+  function inboxMix(ib) {
+    const rows = [
+      { label: "Warmed", v: ib.warmed, color: "#12B76A" },
+      { label: "Warming", v: ib.warming, color: "#F79009" },
+      { label: "New", v: ib.new, color: "#98A2B3" }
+    ];
+    return `
+      <div class="inbox-head">
+        <strong>${val(ib.active)}</strong>
+        <span>active inboxes · mix unread until Analyst fills warmed / warming / new</span>
       </div>
-    </div>`;
+      ${hBars(rows, Number(ib.active) || 0)}
+      <p class="prod-math">New accounts: ${plain(ib.warmup_days)}-day warmup before they add to daily capacity. Do not invent a split from the active count.</p>`;
+  }
+
+  function capacityProduction(d) {
+    const cap = d.capacity || {};
+    const ib = inboxesOf(d);
+    const rem = remainingToday(d);
+    const day = d.daily || {};
+    const rows = [
+      { label: "Sent today", v: day.sends, color: "#0A2C3E" },
+      { label: "Remaining", v: rem, color: "#FF7420" }
+    ];
+    return `
+      <div class="remain-hero">
+        <div>
+          <div class="v">${val(rem)}</div>
+          <div class="s">Sends today ${plain(day.sends)} · remaining unread until sends are read</div>
+        </div>
+      </div>
+      ${hBars(rows, cap.weekday_ceiling)}
+      <p class="prod-math">How capacity is produced: ${plain(ib.active)} inboxes × ${plain(ib.per_mailbox_day)} / mailbox = ${plain(cap.weekday_ceiling)} weekday capacity. Usable after reserve ${plain(cap.usable_after_reserve)}. Scale target ${plain(cap.scale_target_day)} is context, not the headline.</p>
+      ${inboxMix(ib)}`;
+  }
+
+  function campaignXray(d) {
+    const rows = d.campaigns;
+    if (rows == null) return emptyState(`Campaigns ${UNKNOWN}.`);
+    if (!rows.length) return emptyState("No observed campaigns in this snapshot. Analyst adds campaigns[] only when a provider read exists.");
+    return `<div class="camp-list">${rows.map((c) => `
+      <article class="camp-card">
+        <div class="camp-top">
+          <div>
+            <h3>${esc(c.name || UNKNOWN)} <span class="camp-id">/ ${esc(c.id || UNKNOWN)}</span></h3>
+            <p class="camp-meta">${esc(c.channel || UNKNOWN)}</p>
+          </div>
+          <span class="pill ${esc((c.status || "flat").toLowerCase())}">${esc(c.status || UNKNOWN)}</span>
+        </div>
+        <div class="camp-metrics">
+          <div><span>Contacted</span><b>${val(c.contacted)}</b></div>
+          <div><span>Sent</span><b>${val(c.sent)}</b></div>
+          <div><span>Delivered</span><b>${val(c.delivered)}</b></div>
+          <div><span>Replies</span><b>${val(c.replies)}</b></div>
+          <div><span>Booked</span><b>${val(c.booked)}</b></div>
+          <div><span>Bounce</span><b>${val(c.bounce)}</b></div>
+        </div>
+        <p class="camp-insight">${esc(c.insight || "No insight in this snapshot.")}</p>
+        ${sourceLine(c.source)}
+      </article>`).join("")}</div>`;
+  }
+
+  function testBoard(d) {
+    const rows = motionOf(d);
+    if (!rows.length) return emptyState("Test surface is empty. Analyst fills motion_surface[] (alias tests[]).");
+    const counts = { live: 0, tested: 0, proposed: 0, not_started: 0 };
+    rows.forEach((r) => {
+      const st = (r.status || "not_started").replace(/-/g, "_");
+      if (counts[st] == null) counts[st] = 0;
+      counts[st] += 1;
+    });
+    return `
+      <div class="test-legend">
+        <span><i class="live"></i> Live ${counts.live || 0}</span>
+        <span><i class="tested"></i> Tested ${counts.tested || 0}</span>
+        <span><i class="proposed"></i> Proposed ${counts.proposed || 0}</span>
+        <span><i class="not_started"></i> Not started ${counts.not_started || 0}</span>
+      </div>
+      <div class="test-board">${rows.map((r) => {
+        const st = (r.status || "not_started").replace(/-/g, "_");
+        return `<article class="test-chip ${esc(st)}">
+          <div class="test-chip-top">
+            <span class="pill ${esc(st)}">${esc((r.status || UNKNOWN).replace(/_/g, " "))}</span>
+            <span class="kind">${esc(r.kind || UNKNOWN)}</span>
+          </div>
+          <h3>${esc(r.label || UNKNOWN)}</h3>
+          <p>${esc(r.note || "No note.")}</p>
+        </article>`;
+      }).join("")}</div>`;
+  }
+
+  function goalTrack(goals) {
+    if (goals == null) return emptyState(`Goals ${UNKNOWN}.`);
+    if (!goals.length) return emptyState("No monthly goals in this snapshot. Analyst fills monthly.goals[].");
+    return `<div class="goal-list">${goals.map((g) => {
+      const missing = isMissing(g.progress);
+      const pct = missing ? 0 : Math.max(0, Math.min(100, Number(g.progress)));
+      return `<article class="goal-card">
+        <div class="goal-top">
+          <h3>${esc(g.label || UNKNOWN)}</h3>
+          <span class="pill">${esc(g.status || UNKNOWN)}</span>
+        </div>
+        <p class="goal-target">Target ${esc(g.target || UNKNOWN)} · baseline ${plain(g.baseline)}</p>
+        <div class="goal-track ${missing ? "unknown-track" : ""}">
+          ${missing ? "" : `<div class="goal-fill" style="width:${pct}%"></div>`}
+        </div>
+        <div class="goal-prog">Progress ${val(g.progress)}${missing ? "" : "%"}</div>
+        <p class="camp-insight">${esc(g.note || "")}</p>
+      </article>`;
+    }).join("")}</div>`;
   }
 
   function listBlock(title, items, tone) {
@@ -113,9 +265,38 @@
     </article>`;
   }
 
+  function takeaways(items, fallback) {
+    const rows = (items && items.length) ? items : fallback;
+    if (!rows || !rows.length) return emptyState("No takeaways in this snapshot.");
+    return `<ul class="takeaways">${rows.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>`;
+  }
+
   function nextList(items) {
     if (!items || !items.length) return emptyState("Nothing queued.");
     return `<ol class="next-list">${items.map((t) => `<li>${esc(t)}</li>`).join("")}</ol>`;
+  }
+
+  function bnList(bn) {
+    if (!bn.length) return emptyState("No bottlenecks in this snapshot.");
+    return `<ol class="bn-list">${bn.map((b, i) => `
+      <li>
+        <span class="rank">${esc(b.rank || i + 1)}</span>
+        <div>
+          <span class="pill ${esc(b.type || "ops")}">${esc(b.type || UNKNOWN)}</span>
+          <strong>${esc(b.item || UNKNOWN)}</strong>
+        </div>
+      </li>`).join("")}</ol>`;
+  }
+
+  function experimentLedger(exps) {
+    if (exps == null) return emptyState(`Experiments ${UNKNOWN}.`);
+    if (!exps.length) return emptyState("No experiments in this snapshot.");
+    return `<div class="exp-list">${exps.map((exp) => `
+      <div class="exp-block">
+        <div class="k">${esc((exp.status || UNKNOWN).replace(/_/g, " "))}</div>
+        <h3>${esc(exp.id || UNKNOWN)}</h3>
+        <p>Control ${esc(exp.control || UNKNOWN)}. ${esc(exp.note || "")}</p>
+      </div>`).join("")}</div>`;
   }
 
   function hero(d) {
@@ -123,6 +304,8 @@
     const fun = d.funnel_baseline || {};
     const day = d.daily || {};
     const meta = d.meta || {};
+    const ib = inboxesOf(d);
+    const rem = remainingToday(d);
 
     document.title = `${meta.brand || "Orchidea"} · ${meta.title || "Outbound & GTM Ops Report"}`;
     document.getElementById("brand-name").textContent = meta.brand || "Orchidea";
@@ -132,65 +315,42 @@
       `<strong>${esc(meta.timezone || UNKNOWN)}</strong><span>as of ${esc(day.as_of || meta.generated_on || UNKNOWN)}</span>`;
     document.getElementById("offer-copy").textContent = meta.offer_live || UNKNOWN;
 
-    const gapTone = !isMissing(cap.gap) && cap.gap > 0 ? "warn" : "";
+    const remTone = isMissing(rem) ? "warn" : "";
     const replyTone = fun.human_replies_non_ooo === 0 ? "miss" : "";
+    const mixUnknown = isMissing(ib.warmed) && isMissing(ib.warming) && isMissing(ib.new);
 
     document.getElementById("hero-stats").innerHTML = [
-      `<article class="kpi ${gapTone}">
-        <div class="k">Send ceiling</div>
-        <div class="v">${val(cap.weekday_ceiling)}</div>
-        <div class="s">vs ${val(cap.scale_target_day)} target</div>
-      </article>`,
       `<article class="kpi">
         <div class="k">Sends today</div>
         <div class="v">${val(day.sends)}</div>
         <div class="s">delivered ${val(day.delivered)}</div>
+      </article>`,
+      `<article class="kpi ${remTone}">
+        <div class="k">Remaining today</div>
+        <div class="v">${val(rem)}</div>
+        <div class="s">to daily capacity</div>
       </article>`,
       `<article class="kpi ${replyTone}">
         <div class="k">Human replies</div>
         <div class="v">${val(fun.human_replies_non_ooo)}</div>
         <div class="s">qualified ${val(fun.qualified_positive_replies)}</div>
       </article>`,
-      `<article class="kpi warn">
-        <div class="k">Capacity gap</div>
-        <div class="v">${val(cap.gap)}</div>
-        <div class="s">${val(cap.mailboxes_active)} × ${val(cap.per_mailbox_day)}</div>
+      `<article class="kpi">
+        <div class="k">Inboxes</div>
+        <div class="v">${val(ib.active)}</div>
+        <div class="s">${mixUnknown ? "warmup mix unknown" : `warmed ${plain(ib.warmed)} · warming ${plain(ib.warming)} · new ${plain(ib.new)}`}</div>
       </article>`
     ].join("");
   }
 
   function daily(d) {
     const ex = d.exec || {};
-    const cap = d.capacity || {};
     const fun = d.funnel_baseline || {};
     const day = d.daily || {};
     const bn = d.bottlenecks || [];
     const next = d.daily && d.daily.decisions_needed ? d.daily.decisions_needed : [];
-
-    const stages = [
-      { label: "Contacted", v: fun.contacted },
-      { label: "Sent", v: fun.emails_sent },
-      { label: "Delivered", v: fun.eligible_delivered },
-      { label: "Replies", v: fun.human_replies_non_ooo },
-      { label: "Booked", v: fun.booked_held }
-    ];
-
-    const capRows = [
-      { label: "Ceiling", v: cap.weekday_ceiling, color: "#FF7420" },
-      { label: "Usable", v: cap.usable_after_reserve, color: "#0A2C3E" },
-      { label: "Target", v: cap.scale_target_day, color: "#12B76A" }
-    ];
-
-    const bnHtml = bn.length
-      ? `<ol class="bn-list">${bn.map((b, i) => `
-          <li>
-            <span class="rank">${esc(b.rank || i + 1)}</span>
-            <div>
-              <span class="pill ${esc(b.type || "ops")}">${esc(b.type || UNKNOWN)}</span>
-              <strong>${esc(b.item || UNKNOWN)}</strong>
-            </div>
-          </li>`).join("")}</ol>`
-      : emptyState("No bottlenecks in this snapshot.");
+    const cap = d.capacity || {};
+    const stages = journeyStages(fun);
 
     const bots = d.fleet || [];
     const pulse = bots.length
@@ -205,27 +365,25 @@
       : "";
 
     return `
-      <div class="situation">${esc(ex.situation || day.notes && day.notes[0] || UNKNOWN)}</div>
+      <div class="situation">${esc(ex.situation || (day.notes && day.notes[0]) || UNKNOWN)}</div>
       ${now}
       ${pulse}
       <div class="viz-grid">
         <article class="chart-card">
           <div class="chart-head">
-            <h2>Capacity vs scale</h2>
-            <p>Configured ceiling, not today’s sends. ${plain(cap.mailboxes_active)} × ${plain(cap.per_mailbox_day)} = ${plain(cap.weekday_ceiling)}. Gap ${plain(cap.gap)} to ${plain(cap.scale_target_day)}.</p>
+            <h2>Remaining to today’s capacity</h2>
+            <p>Sent today vs what is left. Inbox mix is how capacity is built — ${plain(cap.mailboxes_active)} × ${plain(cap.per_mailbox_day)} is the production math, not the headline KPI.</p>
           </div>
-          <div class="chart-body">
-            ${gauge(cap.weekday_ceiling, cap.scale_target_day, "of target")}
-            ${hBars(capRows, cap.scale_target_day)}
-          </div>
+          ${capacityProduction(d)}
           ${sourceLine(cap.source)}
         </article>
         <article class="chart-card">
           <div class="chart-head">
-            <h2>Pipeline</h2>
-            <p>Control ${plain(fun.control)}. Qualified and opportunities stay unknown — not charted.</p>
+            <h2>Pipeline x-ray</h2>
+            <p>Control ${plain(fun.control)}. Where the bottleneck sits along the OS. Hatched = unknown. Red = observed zero.</p>
           </div>
           ${funnelViz(stages)}
+          ${journeyCallout(stages)}
           ${sourceLine(fun.source)}
         </article>
       </div>
@@ -235,8 +393,8 @@
       </div>
       <div class="split">
         <article class="list-card">
-          <h3>Bottlenecks</h3>
-          ${bnHtml}
+          <h3>Ranked bottlenecks</h3>
+          ${bnList(bn)}
         </article>
         <article class="list-card accent">
           <h3>Do next</h3>
@@ -249,13 +407,7 @@
   function weekly(d) {
     const w = d.weekly || {};
     const fun = d.funnel_baseline || {};
-    const stages = [
-      { label: "Delivered", v: fun.eligible_delivered },
-      { label: "Human replies", v: fun.human_replies_non_ooo },
-      { label: "Qualified", v: fun.qualified_positive_replies },
-      { label: "Booked / held", v: fun.booked_held },
-      { label: "Opportunities", v: fun.opportunities }
-    ];
+    const stages = journeyStages(fun);
     const filled = [
       ["Keep", w.keep, "keep"],
       ["Kill", w.kill, "kill"],
@@ -269,76 +421,113 @@
     return `
       <div class="sec">
         <h2>${esc(w.label || "This week")}</h2>
-        <p>Judge copy only when human replies exist.</p>
+        <p>Weekly GTM operating review. Judge copy only when human replies exist. Empty keep/kill is omitted, not a four-column void.</p>
       </div>
       <article class="chart-card">
         <div class="chart-head">
-          <h2>Conversion ladder</h2>
-          <p>Eligible delivered → replies → qualified → booked → opportunities. Control ${plain(fun.control)}.</p>
+          <h2>Week takeaways</h2>
+          <p>What a GTM lead would brief from this snapshot.</p>
+        </div>
+        ${takeaways(w.insights, w.notes)}
+      </article>
+      <article class="chart-card">
+        <div class="chart-head">
+          <h2>Journey this week</h2>
+          <p>Control ${plain(fun.control)}. Contacted → Sent → Delivered → Replies → Booked.</p>
         </div>
         ${funnelViz(stages)}
+        ${journeyCallout(stages)}
         ${sourceLine(fun.source)}
       </article>
-      ${filled.length ? `<div class="mini-buckets">${bucketHtml}</div>` : ""}
-      <p class="lede">${(w.notes || []).map(esc).join(" ")} Keep / kill / scale stay empty until human replies exist (${plain(fun.human_replies_non_ooo)} observed).</p>
+      <article class="chart-card">
+        <div class="chart-head">
+          <h2>Campaign x-ray</h2>
+          <p>Observed campaigns only. Others omitted — not invented. Volume, performance, and what we can learn.</p>
+        </div>
+        ${campaignXray(d)}
+      </article>
+      <article class="chart-card">
+        <div class="chart-head">
+          <h2>Test board</h2>
+          <p>What we are testing vs not. Untested channels are a bottleneck and an option. EXP-MSG-001 is proposed, not live.</p>
+        </div>
+        ${testBoard(d)}
+      </article>
+      ${filled.length ? `<div class="mini-buckets cols-${filled.length}">${bucketHtml}</div>` : ""}
       ${sourceLine(w.source || fun.source)}`;
   }
 
   function monthly(d) {
     const m = d.monthly || {};
     const cap = d.capacity || {};
-    const exp = (d.experiments || [])[0];
+    const ib = inboxesOf(d);
+    const fun = d.funnel_baseline || {};
+    const stages = journeyStages(fun);
+    const remMonth = m.remaining_to_capacity;
+    const used = m.capacity_used;
+    const sends = m.sends;
     const rows = [
-      { label: "Ceiling", v: cap.weekday_ceiling, color: "#FF7420" },
-      { label: "Usable", v: cap.usable_after_reserve, color: "#0A2C3E" },
-      { label: "Scale target", v: cap.scale_target_day, color: "#12B76A" }
+      { label: "Sends (month)", v: sends, color: "#0A2C3E" },
+      { label: "Capacity used", v: used, color: "#667085" },
+      { label: "Remaining", v: remMonth, color: "#FF7420" }
     ];
-    const trends = m.trends;
-    let trendBlock;
-    if (trends == null) trendBlock = emptyState(`Trends ${UNKNOWN}.`);
-    else if (!trends.length) trendBlock = emptyState("No monthly trend series yet. Analyst writes monthly.trends[].");
-    else {
-      trendBlock = hBars(
-        trends.map((t, i) => ({
-          label: t.label || UNKNOWN,
-          v: t.value,
-          color: i === 0 ? "#FF7420" : "#0A2C3E"
-        }))
-      );
-    }
 
     return `
       <div class="sec">
         <h2>${esc(m.label || "This month")}</h2>
-        <p>Structural reads. Do not grade copy on a month with zero human replies.</p>
+        <p>What we are working towards, how we are tracking, what we learned, what we will test next. Not a ROAS score.</p>
       </div>
+      <article class="chart-card">
+        <div class="chart-head">
+          <h2>Goal tracking</h2>
+          <p>${esc((d.meta && d.meta.offer_live) || "20% revenue growth, or keep working free until hit.")}</p>
+        </div>
+        ${goalTrack(m.goals)}
+      </article>
       <div class="viz-grid">
         <article class="chart-card">
           <div class="chart-head">
-            <h2>Sends per weekday</h2>
-            <p>${plain(cap.mailboxes_active)} mailboxes × ${plain(cap.per_mailbox_day)} = ceiling ${plain(cap.weekday_ceiling)}.</p>
+            <h2>Remaining to capacity</h2>
+            <p>Month remaining, not a ceiling title. Production math sits underneath: ${plain(ib.active)} × ${plain(ib.per_mailbox_day)} / weekday. Warmup mix ${plain(ib.warmed)} / ${plain(ib.warming)} / ${plain(ib.new)}.</p>
           </div>
-          <div class="chart-body">
-            ${gauge(cap.weekday_ceiling, cap.scale_target_day, "of target")}
-            ${hBars(rows, cap.scale_target_day)}
-          </div>
-          ${sourceLine(cap.source)}
+          ${hBars(rows, cap.weekday_ceiling)}
+          <p class="prod-math">Structural production is known. Remaining-to-capacity over the month stays ${UNKNOWN} until Analyst writes monthly.sends / monthly.remaining_to_capacity. Scale target ${plain(cap.scale_target_day)} is context.</p>
+          ${sourceLine(m.source || cap.source)}
         </article>
         <article class="chart-card">
           <div class="chart-head">
-            <h2>Experiment</h2>
-            <p>Proposed is not live.</p>
+            <h2>Conversion vs supply</h2>
+            <p>Same journey x-ray. If remaining-to-capacity is unknown and replies are zero, conversion is the operating unknown.</p>
           </div>
-          ${exp ? `<div class="exp-block">
-            <div class="k">${esc(exp.status || UNKNOWN)}</div>
-            <h3>${esc(exp.id || UNKNOWN)}</h3>
-            <p>Control ${esc(exp.control || UNKNOWN)}. ${esc(exp.note || "")}</p>
-          </div>` : emptyState("No experiments in this snapshot.")}
-          ${trendBlock}
-          ${sourceLine(m.source)}
+          ${funnelViz(stages)}
+          ${journeyCallout(stages)}
         </article>
       </div>
-      <p class="lede">${(m.notes || []).map(esc).join(" ")}</p>`;
+      <article class="chart-card">
+        <div class="chart-head">
+          <h2>Channel / offer test ledger</h2>
+          <p>Components of outbound we have and have not tried.</p>
+        </div>
+        ${testBoard(d)}
+      </article>
+      <div class="split">
+        <article class="list-card">
+          <h3>Month takeaways</h3>
+          ${takeaways(m.insights, m.notes)}
+        </article>
+        <article class="list-card accent">
+          <h3>Next bets</h3>
+          ${nextList(m.next_bets)}
+        </article>
+      </div>
+      <article class="chart-card">
+        <div class="chart-head">
+          <h2>Experiment ledger</h2>
+          <p>Proposed is not live.</p>
+        </div>
+        ${experimentLedger(d.experiments)}
+        ${sourceLine(m.source)}
+      </article>`;
   }
 
   function fleet(d) {
@@ -349,24 +538,33 @@
 
     const cards = bots.map((b) => {
       const st = fleetState(b);
+      const kpi = b.kpi || b.target;
+      const workingLabel = isMissing(b.working)
+        ? (st === "paused" ? "paused — routine not running" : UNKNOWN)
+        : b.working;
       return `<article class="bot ${st}">
         <div class="bot-top">
           <h3>${esc(b.name || UNKNOWN)}</h3>
-          <span class="pill ${st}">${esc(st === "paused" ? "paused" : (b.mode || UNKNOWN))}</span>
+          <span class="pill ${st}">${esc(st)}</span>
         </div>
         <p class="bot-job">${esc(b.job || UNKNOWN)}</p>
-        <div class="bot-stats">
-          <div><span>Target</span><b>${esc(b.target || UNKNOWN)}</b></div>
-          <div><span>Actual</span><b>${val(b.actual)}</b></div>
+        <div class="bot-kpi">
+          <span>KPI it tracks</span>
+          <b>${esc(kpi || UNKNOWN)}</b>
         </div>
-        <p class="bot-out">${esc(b.last_outcome || UNKNOWN)}</p>
+        <div class="bot-stats">
+          <div><span>Actual</span><b>${val(b.actual)}</b></div>
+          <div><span>Working?</span><b>${typeof workingLabel === "string" && workingLabel === UNKNOWN ? `<span class="unknown">${UNKNOWN}</span>` : esc(String(workingLabel))}</b></div>
+        </div>
+        <p class="bot-out"><span>Last outcome</span>${esc(b.last_outcome || UNKNOWN)}</p>
+        <p class="bot-id">${esc(b.id || UNKNOWN)} · ${esc(b.mode || UNKNOWN)}</p>
       </article>`;
     }).join("");
 
     return `
       <div class="sec">
         <h2>Fleet</h2>
-        <p>${bots.length} bots. Actual stays unknown until a provider read-back.</p>
+        <p>${bots.length} bots. Operational status is live / paused / draft. KPI actual stays unknown until a provider read-back. Paused means the routine is not running — it is not a KPI of zero. Qualification is not in this fleet.</p>
       </div>
       <div class="fleet-legend">
         <span><i class="live"></i> Live ${counts.live}</span>
@@ -375,35 +573,50 @@
         <span><i class="flat"></i> Other ${counts.flat}</span>
       </div>
       <div class="bot-grid">${cards || emptyState(UNKNOWN)}</div>
-      ${paused.length ? `<div class="note-bar">Paused: ${paused.map((p) => esc(`${p.owner} · ${p.routine}`)).join(" · ")}</div>` : ""}`;
+      ${paused.length ? `<div class="note-bar">Paused routines: ${paused.map((p) => esc(`${p.owner} · ${p.routine}`)).join(" · ")}</div>` : ""}`;
   }
 
   function openBoard(d) {
     const items = d.open_items;
     const bn = d.bottlenecks || [];
     if (items == null) return emptyState(`Focus items ${UNKNOWN}.`);
+
+    const cards = bn.length
+      ? `<div class="focus-stack">${bn.map((b, i) => `
+          <article class="focus-card">
+            <div class="focus-gap">
+              <div class="focus-kicker">
+                <span class="rank">${esc(b.rank || i + 1)}</span>
+                <span class="pill ${esc(b.type || "ops")}">${esc(b.type || UNKNOWN)}</span>
+              </div>
+              <h3>${esc(b.item || UNKNOWN)}</h3>
+              <p>${esc(b.gap || b.item || UNKNOWN)}</p>
+            </div>
+            <div>
+              <h4>Where it sits</h4>
+              <p>${esc(b.journey || UNKNOWN)}</p>
+            </div>
+            <div>
+              <h4>Unblock</h4>
+              <p>${esc(b.unblock || UNKNOWN)}</p>
+            </div>
+            <div class="focus-test">
+              <h4>Test we should / shouldn’t run</h4>
+              <p>${esc(b.test || UNKNOWN)}</p>
+            </div>
+          </article>`).join("")}</div>`
+      : emptyState("No bottlenecks in this snapshot.");
+
     return `
       <div class="sec">
         <h2>Focus</h2>
-        <p>What to do. Bottlenecks are why. Nothing else belongs on this page.</p>
+        <p>Name the gap, where it sits on the journey, the unblock, and the test we should or should not run. Bottlenecks are why. The list is what to do.</p>
       </div>
-      <div class="split">
-        <article class="list-card">
-          <h3>Why it is stuck</h3>
-          <ol class="bn-list">${bn.map((b, i) => `
-            <li>
-              <span class="rank">${esc(b.rank || i + 1)}</span>
-              <div>
-                <span class="pill ${esc(b.type || "ops")}">${esc(b.type || UNKNOWN)}</span>
-                <strong>${esc(b.item || UNKNOWN)}</strong>
-              </div>
-            </li>`).join("")}</ol>
-        </article>
-        <article class="list-card accent">
-          <h3>Do next</h3>
-          ${nextList(items)}
-        </article>
-      </div>`;
+      ${cards}
+      <article class="list-card accent">
+        <h3>Do next</h3>
+        ${nextList(items)}
+      </article>`;
   }
 
   function footer(d) {
@@ -412,7 +625,7 @@
     document.getElementById("footer").innerHTML = `
       <p>${esc(meta.brand || "Orchidea")} · snapshot ${esc(meta.generated_on || UNKNOWN)} · ${esc(meta.timezone || UNKNOWN)} · ${esc(systems.identity || UNKNOWN)} / ${esc(systems.execution || UNKNOWN)} / ${esc(systems.approvals || UNKNOWN)}.</p>
       <p>${(meta.notes || []).map(esc).join(" ")}</p>
-      <p>Analyst overwrites data.js. null is ${UNKNOWN}, never 0.</p>`;
+      <p>Analyst overwrites data.js. null is ${UNKNOWN}, never 0. Qualification is deleted. No Salesforce.</p>`;
   }
 
   function showTab(name) {
