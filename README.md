@@ -64,7 +64,7 @@ Do **not** invent today’s sends, delivered, inbox warmup mix (`inboxes.warmed`
 
 Existing top-level keys stay: `meta`, `exec`, `goals`, `capacity`, `funnel_baseline`, `fleet`, `paused_routines`, `open_items`, `bottlenecks`, `experiments`, `daily`, `weekly`, `monthly`, `gtm_radar`.
 
-Optional URL fields (omit or `null` — the UI hides the control): `meta.links.{salesforge,attio,notion,warmforge,dashboard}`, `campaigns[].url`, `fleet[].url`, `motion_surface[].url`, `experiments[].url`.
+Optional URL fields (omit or `null`; the UI hides the control): `meta.links.{salesforge,attio,notion,warmforge,dashboard}`, `campaigns[].url`, `fleet[].url`, `motion_surface[].url`, `experiments[].url`.
 
 ### Research bot (`gtm_radar`)
 
@@ -101,7 +101,7 @@ Static site. No build step.
 
 Hosted on GitHub Pages from [`dylang001/orchidea-ops-report`](https://github.com/dylang001/orchidea-ops-report) (`main`, site root). `robots.txt` is `Disallow: /` and the HTML is `noindex`. Bump the `?v=` query on `app.js` / `styles.css` after a UI change so browsers do not keep a stale report. `data.js` is loaded with `Date.now()` cache-bust, then `app.js`.
 
-**Analyst refresh:** overwrite **only** `data.js` on that repo's `main` and push. Do not invent metrics. Do not paste secrets. `vercel.json` (if you also git-connect Vercel) sets `Cache-Control: no-cache` on `data.js`. Do not use Vercel `cleanUrls` — it 404'd `/` while `/data.js` still served.
+**Analyst refresh:** overwrite **only** `data.js` on that repo's `main` and push. Do not invent metrics. Do not paste secrets. `vercel.json` (if you also git-connect Vercel) sets `Cache-Control: no-cache` on `data.js`. Do not use Vercel `cleanUrls`; it 404'd `/` while `/data.js` still served.
 
 Do not commit tokens. Do not paste Salesforge / Attio / Notion secrets into `data.js`.
 

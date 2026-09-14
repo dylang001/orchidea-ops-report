@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex, nofollow" />
   <title>Orchidea · Outbound &amp; GTM Ops</title>
-  <link rel="icon" href="logo.png" type="image/png" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=11" />
+  <link rel="stylesheet" href="styles.css?v=15" />
 </head>
 <body class="tab-board grain-today">
   <a class="skip" href="#panel-board">Skip to report</a>
@@ -17,7 +17,7 @@
   <header class="top">
     <div class="top-inner">
       <div class="brand">
-        <img class="logo" src="logo.png" width="40" height="40" alt="" />
+          <img class="logo" src="favicon.svg" width="40" height="40" alt="Orchidea" />
         <div>
           <div class="brand-name" id="brand-name">Orchidea</div>
           <p class="subtitle" id="subtitle">Outbound GTM ops</p>
@@ -31,7 +31,7 @@
       </nav>
       <div class="mast-meta" id="hero-window">
         <strong>Africa/Johannesburg</strong>
-        <span>as of —</span>
+        <span>as of …</span>
       </div>
     </div>
   </header>
@@ -72,7 +72,7 @@
       data.src = "data.js?t=" + Date.now();
       data.onload = function () {
         var app = document.createElement("script");
-        app.src = "app.js?v=11";
+        app.src = "app.js?v=15";
         document.body.appendChild(app);
       };
       data.onerror = function () {

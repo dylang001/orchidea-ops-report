@@ -107,6 +107,7 @@
     const missing = stages.filter((s) => isMissing(s.v)).map((s) => s.label);
     const zeros = stages.filter((s) => !isMissing(s.v) && Number(s.v) === 0).map((s) => s.label);
     const stuck = missing[0] || zeros[0] || "";
+    const chartH = 132;
 
     const known = stages.map((s) => (isMissing(s.v) ? 0 : Number(s.v)));
     const max = Math.max(1, ...known);
@@ -114,16 +115,27 @@
       const missingV = isMissing(s.v);
       const zero = !missingV && Number(s.v) === 0;
       const prev = i === 0 ? null : stages[i - 1].v;
-      const conv = i === 0 ? "start" : rate(s.v, prev);
-      const h = missingV ? 10 : zero ? 8 : Math.max(14, Math.round((Number(s.v) / max) * 36));
+      let conv = "";
+      if (i === 0) {
+        conv = "start";
+      } else if (!isMissing(prev) && !isMissing(s.v) && Number(prev) !== 0) {
+        conv = "from last " + rate(s.v, prev);
+      }
+      const h = missingV
+        ? 72
+        : zero
+          ? 28
+          : Math.max(28, Math.round((Number(s.v) / max) * 128));
       const cls = ["node", missingV ? "is-unknown" : "", zero ? "is-zero" : "", s.label === stuck ? "is-stuck" : ""]
         .filter(Boolean).join(" ");
       return `<button type="button" class="${cls}" data-open="stage:${esc(s.key)}">
-        <span class="node-shell">
-          <span class="node-bar"><i style="height:${h}px"></i></span>
+        <span class="node-chart" aria-hidden="true">
+          <span class="node-fill" style="height:${h}px"></span>
+        </span>
+        <span class="node-meta">
           <span class="node-n">${val(s.v)}</span>
           <span class="node-l">${esc(s.label)}</span>
-          <span class="node-c">${i === 0 ? "start" : "from last " + esc(conv)}</span>
+          ${conv ? `<span class="node-c">${esc(conv)}</span>` : ""}
         </span>
       </button>`;
     }).join("");
@@ -131,7 +143,7 @@
     const bits = [];
     if (missing.length) bits.push(`Hatched = unread (${missing.join(", ")}).`);
     if (zeros.length) bits.push(`Red = observed zero (${zeros.join(", ")}).`);
-    bits.push("Click a step for the definition, source, and the live system.");
+    bits.push("Click a step for definition, source, and the live system.");
 
     return `
       <div class="journey" role="list">${nodes}</div>
@@ -272,13 +284,13 @@
         ${next[0] ? `<button type="button" class="now-btn" data-open="action:0" title="${esc(next[0])}">Focus now<i>${ARROW}</i></button>` : ""}
       </div>
       <div class="bento">
-        <article class="tile span-8">
-          <p class="tile-kicker">Journey x-ray</p>
+        <article class="tile span-8 accent-conv">
+          <p class="tile-kicker">Journey</p>
           <h2>Where the control dies</h2>
-          <p class="lede">One visual for the whole board. Hatched is unread. Red is observed zero. Click a step.</p>
+          <p class="lede">Hatched is unread. Red is observed zero. Click a step.</p>
           ${funnelViz(d)}
         </article>
-        <article class="tile span-4">
+        <article class="tile span-4 accent-ops">
           <p class="tile-kicker">Do this</p>
           <h2>Focus now</h2>
           <div class="stack">
@@ -311,10 +323,10 @@
           <h2>Open the live surface</h2>
           <p class="lede">This board never replaces Attio, Salesforge, or Notion. Unknown means the provider was not read.</p>
           <div class="src-dock">
-            ${ext(L.attio, "Attio — identity")}
-            ${ext(L.salesforge, "Salesforge — execution")}
-            ${ext(L.notion, "Notion — approvals")}
-            ${ext(L.warmforge, "Warmforge — inboxes")}
+            ${ext(L.attio, "Attio · identity")}
+            ${ext(L.salesforge, "Salesforge · execution")}
+            ${ext(L.notion, "Notion · approvals")}
+            ${ext(L.warmforge, "Warmforge · inboxes")}
             ${ext(L.dashboard, "This report")}
           </div>
         </article>
@@ -449,7 +461,7 @@
       <div class="bot-grid" style="margin-top:12px">${bots.map((b) => {
         const st = (b.lifecycle || "draft").toLowerCase();
         const working = isMissing(b.working)
-          ? (st === "paused" ? "paused — routine not running" : UNKNOWN)
+          ? (st === "paused" ? "paused · routine not running" : UNKNOWN)
           : b.working;
         return `<button type="button" class="bot ${esc(st)}" data-open="bot:${esc(b.id || b.name)}">
           <div class="bot-top">
@@ -476,7 +488,7 @@
       <div class="sec">
         <p class="sec-kicker">Focus</p>
         <h2>The gap, where it sits, the unblock, the test we should not fake.</h2>
-        <p>Overview shows the top three. This page is the full consultative stack — once, not restated as bullet twins.</p>
+        <p>Overview shows the top three. This page is the full consultative stack, once, not restated as bullet twins.</p>
       </div>
       <div class="focus-stack">${bn.map((b, i) => `
         <article class="focus-card" data-open="bottleneck:${esc(b.rank || i + 1)}" role="button" tabindex="0">
@@ -711,7 +723,7 @@
     if (kind === "unknown") {
       openDrawer("Unknown ≠ 0", "Why this is blank", `
         <p><b>null</b> means the provider was not read, or the field is not known. The UI prints “unknown”.</p>
-        <p><b>0</b> means we observed zero — for example human replies on C1-N1.</p>
+        <p><b>0</b> means we observed zero, for example human replies on C1-N1.</p>
         <p>Never coerce a missing Salesforge / Attio / Notion read to 0. Analyst first-run is what fills today’s sends, remaining, delivered, and inbox mix.</p>`);
     }
   }

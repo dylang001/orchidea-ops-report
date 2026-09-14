@@ -1,5 +1,5 @@
 /**
- * Orchidea Outbound / GTM Ops — living snapshot.
+ * Orchidea Outbound / GTM Ops · living snapshot.
  *
  * The Outbound Analyst bot overwrites this file on a schedule.
  * Contract:
@@ -9,14 +9,14 @@
  *   - Every numeric cluster carries a `source` string.
  *   - Do not invent metrics. Do not add Salesforce.
  *   - Timezone is always Africa/Johannesburg.
- *   - Qualification is deleted — do not put it back in fleet[] or paused_routines.
+ *   - Qualification is deleted. Do not put it back in fleet[] or paused_routines.
  *
  * Stable top-level keys (keep these; UI reads them):
  *   meta, exec, goals, capacity, funnel_baseline, fleet, paused_routines,
  *   open_items, bottlenecks, experiments, daily, weekly, monthly,
  *   gtm_radar
  *
- * Optional URL fields (omit or null if unknown — UI hides the control):
+ * Optional URL fields (omit or null if unknown; UI hides the control):
  *   meta.links.{salesforge,attio,notion,warmforge,dashboard}
  *   campaigns[].url   fleet[].url   motion_surface[].url   experiments[].url
  *
@@ -78,7 +78,7 @@ window.ORCHIDEA_OPS = {
   },
 
   exec: {
-    situation: "Three stacked gaps — not a send-ceiling lecture. Today's remaining-to-capacity is unknown until Analyst reads sends. The journey goes dark at Delivered, then human replies are observed zero, so we cannot yet split deliverability vs copy. LinkedIn, mass video, and lead magnets are untested. Reply and CRM weekday routines are paused. EXP-MSG-001 is proposed, not live.",
+    situation: "Three stacked gaps, not a send-ceiling lecture. Remaining-to-capacity for today is unknown until Analyst reads sends. The journey goes dark at Delivered, then human replies are observed zero, so we cannot yet split deliverability vs copy. LinkedIn, mass video, and lead magnets are untested. Reply and CRM weekday routines are paused. EXP-MSG-001 is proposed, not live.",
     happening: [
       "Control C1-N1 / 48153 is the live observed campaign (41 contacted, 68 sent, 1 bounce).",
       "10 inboxes are active; warmup mix (warmed / warming / new) is unknown until Analyst reads it.",
@@ -86,10 +86,10 @@ window.ORCHIDEA_OPS = {
       "Outbound Analyst is in the fleet as live / building."
     ],
     not_happening: [
-      "No live send or delivered read for today — remaining-to-capacity is unknown.",
+      "No live send or delivered read for today. Remaining-to-capacity is unknown.",
       "Human replies are observed zero. Qualified positive remains unknown.",
       "Reply Intelligence and CRM weekday routines are paused.",
-      "EXP-MSG-001 is proposed, not activated — do not judge copy on zero human replies.",
+      "EXP-MSG-001 is proposed, not activated. Do not judge copy on zero human replies.",
       "LinkedIn, mass video, and lead magnets are not started. Paid ads is not the motion unless later added.",
       "Prospecting has not filled the queue to scale."
     ],
@@ -124,7 +124,7 @@ window.ORCHIDEA_OPS = {
     usable_after_reserve: 160,
     scale_target_day: 300,
     gap: 100,
-    source: "Dylan 2026-09-14 — weekday production 10 × 20 = 200"
+    source: "Dylan 2026-09-14 · weekday production 10 × 20 = 200"
   },
 
   inboxes: {
@@ -134,7 +134,7 @@ window.ORCHIDEA_OPS = {
     new: null,
     warmup_days: 14,
     per_mailbox_day: 20,
-    source: "Dylan 2026-09-14 — active count only; warmup mix unread"
+    source: "Dylan 2026-09-14 · active count only; warmup mix unread"
   },
 
   funnel_baseline: {
@@ -163,7 +163,7 @@ window.ORCHIDEA_OPS = {
       replies: 0,
       booked: 0,
       bounce: 1,
-      insight: "Only observed control. Not replenishment-enabled. Delivered unread, so we cannot split deliverability vs copy. 0 human replies — do not judge messaging yet.",
+      insight: "Only observed control. Not replenishment-enabled. Delivered unread, so we cannot split deliverability vs copy. 0 human replies; do not judge messaging yet.",
       url: "https://app.salesforge.ai",
       source: "Salesforge read-back 2026-09-13"
     }
@@ -228,7 +228,7 @@ window.ORCHIDEA_OPS = {
       label: "Messaging / CTA",
       kind: "lever",
       status: "proposed",
-      note: "EXP-MSG-001 — Sep 8 verbatim + chat CTA. Proposed, not activated.",
+      note: "EXP-MSG-001 · Sep 8 verbatim + chat CTA. Proposed, not activated.",
       url: "https://dylang001.github.io/orchidea-ops-report/#radar/radar-cta-hybrid"
     }
   ],
@@ -319,7 +319,7 @@ window.ORCHIDEA_OPS = {
       target: "daily/weekly/monthly + dashboard",
       actual: null,
       working: null,
-      last_outcome: "building — first-run pending",
+      last_outcome: "building · first-run pending",
       paused_routines: [],
       status: "building",
       url: "https://dylang001.github.io/orchidea-ops-report/"
@@ -334,9 +334,9 @@ window.ORCHIDEA_OPS = {
 
   open_items: [
     "Get Analyst first-run live so today’s sends, remaining-to-capacity, and delivered stop being unknown",
-    "Keep EXP-MSG-001 proposed until there are human replies to judge — do not activate on zero",
+    "Keep EXP-MSG-001 proposed until there are human replies to judge. Do not activate on zero.",
     "Decide when to enable Reply + CRM weekday routines (ops pause, not a copy test)",
-    "Inbox warmup mix is unread — do not plan new-account capacity until warmed / warming / new is filled",
+    "Inbox warmup mix is unread. Do not plan new-account capacity until warmed / warming / new is filled.",
     "LI copy still needs Sep-8 contract cleanup before that channel is a real test"
   ],
 
@@ -355,7 +355,7 @@ window.ORCHIDEA_OPS = {
       type: "ops",
       item: "Today’s remaining-to-capacity is unknown",
       gap: "Sends today are unread, so remaining-to-capacity cannot be computed. Dylan already knows the production math (inboxes × per-mailbox). The operating number is how much of today’s capacity is left.",
-      journey: "Supply / send step — volume for today is not on the board.",
+      journey: "Supply / send step: volume for today is not on the board.",
       unblock: "Analyst reads Salesforge sends today. Remaining = weekday production − sends (null until both exist).",
       test: "Not a channel test. This is a telemetry unblock."
     },
@@ -364,7 +364,7 @@ window.ORCHIDEA_OPS = {
       type: "channel",
       item: "Untested channels while email is the only live motion",
       gap: "LinkedIn, mass video, and lead magnets are not started. Paid ads is explicitly not the motion unless later added. The test surface is idle except email + the live offer/guarantee.",
-      journey: "Before Contacted — other ways to fill and convert the journey are untried.",
+      journey: "Before Contacted: other ways to fill and convert the journey are untried.",
       unblock: "Finish Sep-8 LI copy cleanup before LinkedIn can be a real test. Treat mass video and magnets as ranked next bets, not decoration.",
       test: "EXP-MSG-001 is the only proposed email test. Do not confuse ‘proposed’ with ‘running’."
     },
@@ -373,7 +373,7 @@ window.ORCHIDEA_OPS = {
       type: "supply",
       item: "Queue depth far below scale",
       gap: "Prospecting is live but has not filled eligible pipeline to the scale target. Actual pipeline depth is unknown until a read-back.",
-      journey: "Before Contacted — the top of the OS is thin.",
+      journey: "Before Contacted: the top of the OS is thin.",
       unblock: "Read Prospecting KPI (eligible pipeline depth). Then decide whether supply or conversion is the tighter constraint.",
       test: "Do not add inboxes to ‘fix’ conversion. Warmup mix is also unknown."
     },
@@ -382,7 +382,7 @@ window.ORCHIDEA_OPS = {
       type: "ops",
       item: "Paused Reply/CRM weekday routines + DRAFT_ONLY operator",
       gap: "Reply Intelligence and CRM Data Nerd are paused. Campaign Operator writes nothing without a Dylan change-set. Even if replies arrive, classification and Attio truth will lag.",
-      journey: "Replies → Booked — the handoff layer is parked.",
+      journey: "Replies → Booked: the handoff layer is parked.",
       unblock: "Decide when to enable Reply + CRM weekday routines. Keep Operator in draft until there is an approved change-set.",
       test: "Enabling paused routines is an ops decision, not EXP-MSG-001."
     }
@@ -412,7 +412,7 @@ window.ORCHIDEA_OPS = {
       "Decide when to enable Reply/CRM paused routines"
     ],
     notes: [
-      "Baseline seed — Analyst will overwrite with live provider read-back."
+      "Baseline seed. Analyst will overwrite with live provider read-back."
     ],
     source: "seed 2026-09-14 (Analyst first-run pending)"
   },
@@ -424,8 +424,8 @@ window.ORCHIDEA_OPS = {
     scale: [],
     test: ["EXP-MSG-001 (proposed, not activated)"],
     insights: [
-      "Only one observed campaign this week: C1-N1 / 48153 — 41 contacted, 68 sent, delivered unknown, 0 human replies, 0 booked, 1 bounce.",
-      "The journey x-ray is blind at Delivered, then red at Replies. That is the conversion bottleneck — not a 200 send-ceiling slide.",
+      "Only one observed campaign this week: C1-N1 / 48153. 41 contacted, 68 sent, delivered unknown, 0 human replies, 0 booked, 1 bounce.",
+      "The journey is blind at Delivered, then red at Replies. That is the conversion bottleneck, not a 200 send-ceiling slide.",
       "Test surface is mostly idle: email + offer/guarantee are live; messaging/CTA is proposed; LinkedIn, mass video, lead magnets, and paid ads are not started.",
       "Keep / kill / scale stay empty until human replies exist to judge. EXP-MSG-001 must not be treated as a running test."
     ],
@@ -441,7 +441,7 @@ window.ORCHIDEA_OPS = {
     capacity_used: null,
     insights: [
       "The goal is 20% revenue growth, or keep working free until hit. Progress is unknown until a revenue baseline is in this file. This is not a ROAS score.",
-      "Remaining-to-capacity over the month is unknown until Analyst reads volume. Production math (10 inboxes × 20/day) is how capacity is made — not the monthly headline.",
+      "Remaining-to-capacity over the month is unknown until Analyst reads volume. Production math (10 inboxes × 20/day) is how capacity is made, not the monthly headline.",
       "We have learned that the control is live and silent: 0 human replies, delivered unread. Copy tests are not yet informative.",
       "Next bets sit on the test surface: do not activate EXP-MSG-001 yet; LI needs contract cleanup; mass video and lead magnets are untried."
     ],
@@ -460,7 +460,7 @@ window.ORCHIDEA_OPS = {
       "Analyst first-run: sends today, remaining-to-capacity, eligible delivered, inbox warmup mix",
       "Hold EXP-MSG-001 as proposed until human replies exist",
       "Finish Sep-8 LinkedIn copy cleanup before that channel is a test",
-      "Rank mass video vs lead magnets as the next untested motion — do not pretend they are running"
+      "Rank mass video vs lead magnets as the next untested motion. Do not pretend they are running."
     ],
     notes: ["Conversion visibility and untested channels dominate. Structural 10 × 20 production is known; remaining-to-capacity is not."],
     source: "seed 2026-09-14"
@@ -525,7 +525,7 @@ window.ORCHIDEA_OPS = {
         confidence: "vendor",
         status: "watch",
         metric: "~1,500 sends / variant",
-        source_name: "Unify GTM — Cold Email A/B Testing",
+        source_name: "Unify GTM · Cold Email A/B Testing",
         url: "https://www.unifygtm.com/explore/cold-email-ab-testing",
         maps_to: "exp:EXP-MSG-001",
         summary: "Unify's 2026 testing framework: one variable at a time, pre-segment by intent, ~1,500+ sends per variant, hold-out when you want to measure vs doing nothing. Audience quality caps the result more than copy. They cite Instantly 2026 that 42% of replies come from follow-ups.",
@@ -548,11 +548,11 @@ window.ORCHIDEA_OPS = {
         confidence: "operator_test",
         status: "try",
         metric: "9.4% vs 5.2% reply",
-        source_name: "Growtoro — Meeting CTA vs Soft Ask",
+        source_name: "Growtoro · Meeting CTA vs Soft Ask",
         url: "https://growtoro.com/blog/cold-email-cta-meeting-vs-soft-ask-split-test",
         maps_to: "exp:EXP-MSG-001",
-        summary: "Controlled split across 80k+ sends, same ICP/opener/body, CTA only. Direct meeting ask: 5.2% reply / 8 meetings per 1k. Soft interest-check: 7.8% / 14. Question with no meeting ask: 9.4% / 16 — but only if the team converts the thread. Hybrid sequence (question → soft → meeting → breakup) hit 31 meetings / 1k on 40k sends. Calendar links in email 1 cut replies ~30%.",
-        why_for_us: "EXP-MSG-001 is Sep 8 verbatim + chat CTA. Chat is closer to a question than a calendar dump — hold that shape. Do not bolt a booking link onto email 1. Reply Intelligence must be unpaused before a question-CTA can convert threads.",
+        summary: "Controlled split across 80k+ sends, same ICP/opener/body, CTA only. Direct meeting ask: 5.2% reply / 8 meetings per 1k. Soft interest-check: 7.8% / 14. Question with no meeting ask: 9.4% / 16, but only if the team converts the thread. Hybrid sequence (question → soft → meeting → breakup) hit 31 meetings / 1k on 40k sends. Calendar links in email 1 cut replies ~30%.",
+        why_for_us: "EXP-MSG-001 is Sep 8 verbatim + chat CTA. Chat is closer to a question than a calendar dump. Hold that shape. Do not bolt a booking link onto email 1. Reply Intelligence must be unpaused before a question-CTA can convert threads.",
         proof: {
           type: "bars",
           caption: "Reply rate by first-email CTA (Growtoro, 80k+ sends).",
@@ -571,7 +571,7 @@ window.ORCHIDEA_OPS = {
         confidence: "operator_test",
         status: "watch",
         metric: "1 positive / 1,041 vs 1,851",
-        source_name: "Calvin Wiltermood — lead magnet vs personalization",
+        source_name: "Calvin Wiltermood · lead magnet vs personalization",
         url: "https://www.linkedin.com/posts/wiltermood_for-fun-ive-been-testing-lead-magnets-vs-activity-7449917411354427392-tqwd",
         maps_to: "motion:lead_magnets",
         summary: "n=42k, US senior sales/leadership at ProServ or SaaS SMBs. Personalization: 2.7% reply, 2% of those positive (1 positive / 1,851). Lead magnet CTA: 1.2% reply, 8% of those positive (1 positive / 1,041). Magnet won on positive-reply efficiency, lost on raw replies. Reddit operators still report magnet-yes then silence unless the next touch is a conversation, not a PDF drop.",
@@ -593,14 +593,14 @@ window.ORCHIDEA_OPS = {
         confidence: "vendor",
         status: "watch",
         metric: "60–90s · hook A/B",
-        source_name: "Sendspark — AI video personalization for outbound",
+        source_name: "Sendspark · AI video personalization for outbound",
         url: "https://www.sendspark.com/resources/ai-video-personalization-outbound-sales",
         maps_to: "motion:mass_video",
         summary: "Vendor playbook, not a third-party benchmark: 60–90 second videos, one CTA, send in business hours, A/B the first 5–10 seconds. They claim 2x LinkedIn reply vs InMail when the file sits in the native thread. Sequence pattern they recommend: video email → text follow-up that references the video → LinkedIn. Score meetings, not views.",
-        why_for_us: "Mass video is not_started. Treat it as a step inside the email sequence after delivered is readable — not a replacement for C1-N1. Do not clone-video blast until inbox warmup mix is known.",
+        why_for_us: "Mass video is not_started. Treat it as a step inside the email sequence after delivered is readable, not a replacement for C1-N1. Do not clone-video blast until inbox warmup mix is known.",
         proof: {
           type: "bars",
-          caption: "Vendor-claimed relative lifts vs text email (Sendspark). Not independently audited — confidence = vendor.",
+          caption: "Vendor-claimed relative lifts vs text email (Sendspark). Not independently audited; confidence = vendor.",
           rows: [
             { label: "Reply (claimed)", value: 250, hint: "200–300% vs text" },
             { label: "Meetings (claimed)", value: 45, hint: "40–50% lift" },
@@ -616,14 +616,14 @@ window.ORCHIDEA_OPS = {
         confidence: "vendor",
         status: "watch",
         metric: "Channel mix is a test lever",
-        source_name: "Unify GTM — sequence / follow-up tests",
+        source_name: "Unify GTM · sequence / follow-up tests",
         url: "https://www.unifygtm.com/explore/cold-email-ab-testing",
         maps_to: "motion:linkedin",
-        summary: "Unify lists channel mix (email plus LinkedIn) as a sequence variable to test after subject line, not as a separate 'LinkedIn program' you turn on blindly. Instantly 2026 also maps Mon launch / Wed follow-up / Fri OOO triage — timing is a lever next to channel.",
+        summary: "Unify lists channel mix (email plus LinkedIn) as a sequence variable to test after subject line, not as a separate 'LinkedIn program' you turn on blindly. Instantly 2026 also maps Mon launch / Wed follow-up / Fri OOO triage; timing is a lever next to channel.",
         why_for_us: "LinkedIn is not_started because Sep-8 copy still needs cleanup. When it is ready, add it as step 2 of C1-N1 (email first, then LI), not as a parallel blast. That matches the Unify 'one variable' rule.",
         proof: {
           type: "bars",
-          caption: "Motion surface right now — live vs not started.",
+          caption: "Motion surface right now: live vs not started.",
           rows: [
             { label: "Email outbound", value: 100, hint: "live · C1-N1" },
             { label: "LinkedIn", value: 0, hint: "not started" },
@@ -643,8 +643,8 @@ window.ORCHIDEA_OPS = {
         source_name: "Instantly Cold Email Benchmark Report 2026",
         url: "https://instantly.ai/cold-email-benchmark-report-2026",
         maps_to: "inboxes",
-        summary: "Instantly 2026: keep bounce under 2% or placement drops. New domains start 5–10/day and ramp over 4–6 weeks. Erratic volume looks like spam. We already policy 14-day warmup and 20/mailbox — the missing read is the warmed / warming / new mix.",
-        why_for_us: "C1-N1 has 1 bounce on 68 sends (~1.5%) — inside the band, but delivered is still unknown so placement is not proven. Do not add inboxes to 'fix' zero replies. Fill warmup mix from Warmforge first.",
+        summary: "Instantly 2026: keep bounce under 2% or placement drops. New domains start 5–10/day and ramp over 4–6 weeks. Erratic volume looks like spam. We already policy 14-day warmup and 20/mailbox. The missing read is the warmed / warming / new mix.",
+        why_for_us: "C1-N1 has 1 bounce on 68 sends (~1.5%), inside the band, but delivered is still unknown so placement is not proven. Do not add inboxes to 'fix' zero replies. Fill warmup mix from Warmforge first.",
         proof: {
           type: "compare",
           caption: "Bounce vs Instantly 2026 guardrail.",
