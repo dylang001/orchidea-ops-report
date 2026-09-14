@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Orchidea · Outbound &amp; GTM Ops Report</title>
+  <link rel="icon" href="logo.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400..700;1,14..32,400..700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=5" />
+</head>
+<body class="tab-daily">
+  <div class="chrome">
+    <header class="mast">
+      <div class="mast-inner">
+        <div class="brand">
+          <img class="logo" src="logo.png" width="40" height="40" alt="Orchidea" />
+          <div>
+            <div class="brand-name" id="brand-name">Orchidea</div>
+            <p class="subtitle" id="subtitle">Growth Partner · Outbound &amp; GTM Ops</p>
+          </div>
+        </div>
+        <div class="mast-meta" id="hero-window">
+          <strong>Africa/Johannesburg</strong>
+          <span>as of 2026-09-14</span>
+        </div>
+      </div>
+    </header>
+    <div class="kpis" id="hero-stats"></div>
+    <nav class="tocnav" aria-label="Report sections">
+      <div class="tocnav-inner">
+        <button type="button" data-tab="daily" aria-selected="true">Overview</button>
+        <button type="button" data-tab="weekly">Weekly</button>
+        <button type="button" data-tab="monthly">Monthly</button>
+        <button type="button" data-tab="fleet">Fleet</button>
+        <button type="button" data-tab="open">Focus</button>
+      </div>
+    </nav>
+  </div>
+
+  <main class="page">
+    <p class="offer-line" id="offer-copy">Sep 8: 20% revenue growth, or keep working free until hit. No deadline. No ROAS.</p>
+    <section id="panel-daily" class="panel active"></section>
+    <section id="panel-weekly" class="panel"></section>
+    <section id="panel-monthly" class="panel"></section>
+    <section id="panel-fleet" class="panel"></section>
+    <section id="panel-open" class="panel"></section>
+    <footer id="footer"></footer>
+  </main>
+
+  <script>
+    document.write('<script src="data.js?t=' + Date.now() + '"><\/script>');
+  </script>
+  <script src="app.js?v=5"></script>
+</body>
+</html>
