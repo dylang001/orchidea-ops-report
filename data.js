@@ -3,7 +3,7 @@ window.ORCHIDEA_OPS = {
     "brand": "Orchidea",
     "partner": "Growth Partner",
     "title": "Outbound & GTM Ops Report",
-    "generated_on": "2026-09-21",
+    "generated_on": "2026-09-22",
     "timezone": "Africa/Johannesburg",
     "offer_live": "Ecommerce live Sep 8: 20% revenue growth OR work free (not ROAS). SaaS 50289: qualified meetings offer. Industry meta 5 pilots live.",
     "systems": {
@@ -20,34 +20,35 @@ window.ORCHIDEA_OPS = {
     },
     "notes": [
       "Contacted != enrolled != sent != replied (Delivered stage removed from funnel UI).",
-      "Hero KPI = prospects loaded today. SoR daily-loaded-prospects.json still date_jhb=2026-09-14 \u2192 hero UNKNOWN for 2026-09-21.",
-      "emails_sent primary first-touch = 310 from SF get_sequence step1 analytics.completed (50239=150+50240=138+50289=22). Not sent-today. Was 303 on 09-16.",
+      "Hero KPI = prospects loaded today. SoR daily-loaded-prospects.json still date_jhb=2026-09-14 → hero UNKNOWN for 2026-09-22.",
+      "emails_sent primary first-touch = 310 from SF get_sequence step1 analytics.completed (50239=150+50240=138+50289=22). Not sent-today. Unchanged vs 09-21; +53 enrolled evening 09-21 still on step1 active (26+26).",
       "Industry step1 completed = 88/88 enrolled (unchanged footprint).",
-      "Ecom eligible-queue depth 28 (catchup28 filled 2026-09-18; awaiting Dylan exact-yes enroll). Apify FREE still over cap / Meta blocked.",
-      "Primebox: still 2 SF-positive (Pemmican, Miami Community Newspapers); NEW since 09-16: Lucky Egg NEG path, WVCEH wrong-contact, Bold Bean OOO. Scott DNC already applied.",
-      "daily.sends=null (mailbox API). Capacity 10\u00d720=200. Fleet 6/6 live; Alfred reviews paused.",
-      "Daily routine failed 2026-09-18; this is first successful refresh since 2026-09-16. Weekly never run (due Mon 09:15 JHB)."
+      "Ecom eligible-queue depth 0 (weekday53 enrolled 53 evening 2026-09-21; catchup28 superseded/closed). Apify FREE still over cap / Meta blocked.",
+      "Primebox: still 2 SF-positive (Pemmican, Miami Community Newspapers); NEW since 09-21 AM: Citizens of Soil OOO (Sarah). Total threads 24 (was 23).",
+      "daily.sends=null (mailbox API). Capacity 10×20=200. Fleet 6/6 live; Alfred reviews paused.",
+      "MATERIAL: eligible 28→0 after weekday53 exact-yes enroll; binding constraint flips to Prospector refill."
     ]
   },
   "exec": {
-    "situation": "MATERIAL 2026-09-21 AM: ecom eligible 28 (was 0) awaiting Dylan exact-yes catchup28 (14/14 \u2192 50239/50240). Primary first-touch \u2248310 (was \u2248303). Still 2 SF-pos (Pemmican + Miami) with CRM hygiene still cold. Capacity 200. No new SF-positives since 09-16.",
+    "situation": "MATERIAL 2026-09-22 AM: ecom eligible 0 (was 28) after weekday53 Dylan exact-yes enroll (27→50239 + 26→50240 evening 09-21). Primary first-touch step1 still ≈310 (new 53 still on step1 active). Still 2 SF-pos (Pemmican + Miami) CRM cold. Capacity 200. Binding = refill ecom supply + 2 positive next-steps.",
     "happening": [
-      "09-18 catchup28 filled eligible-queue to 28; change set awaiting Dylan exact-yes (Deliverable 17 / AcceptAll 11).",
-      "Primary first-touch step1 completed: 50239=150, 50240=138 (+7 vs 09-16), 50289=22 (sum 310).",
+      "09-21 evening weekday53 applied: 53/53 enrolled (27→50239, 26→50240); queue 53→0. catchup28 open item closed/superseded.",
+      "Primary first-touch step1 completed unchanged: 50239=150, 50240=138, 50289=22 (sum 310). step1 active 26+26=52 (new enrolls not yet completed).",
+      "Enrollment totals: 50239 219/79 active/111 completed; 50240 207/91 active/88 completed (was 192/142/22 and 181/126/27 on 09-21 AM).",
       "Industry step1 completed sum=88 across 50383/85/87/88/92 (enrolled 88). Sequences deep into step3.",
-      "Primebox NEW since 09-16 AM: Lucky Egg NEG path (Luke), WVCEH Wrong contact, Bold Bean OOO; total threads 23 (was 20).",
-      "Attio hygiene 09-21 AM: Pemmican + Miami still Propsecting/no reply_status \u2014 preview only, approval required.",
-      "Morning inventory 06:18Z: eligible=28, Apify over FREE (Meta blocked), ceiling 200 vs 300, positive_unread=0."
+      "Primebox NEW since 09-21 AM: Citizens of Soil OOO Sarah (2026-09-21 20:36 JHB); total threads 24 (was 23); OOO=11.",
+      "Attio hygiene 09-22 AM: Pemmican + Miami still Propsecting/no reply_status — preview only, approval required.",
+      "Morning inventory 06:25Z: eligible=0, Apify over FREE (Meta blocked), ceiling 200 vs 300, positive_unread=0."
     ],
     "not_happening": [
-      "No 2026-09-21 (nor 09-15..09-20) daily-loaded-prospects.json SoR \u2014 hero prospects_loaded_today UNKNOWN.",
-      "Sent-today unavailable (mailbox API) \u2014 daily.sends=null.",
+      "No 2026-09-22 (nor 09-15..09-21) daily-loaded-prospects.json SoR — hero prospects_loaded_today UNKNOWN.",
+      "Sent-today unavailable (mailbox API) — daily.sends=null.",
       "No booked meetings (meeting_booked label count 0).",
-      "catchup28 NOT enrolled yet (awaiting Dylan exact-yes since 09-18).",
+      "No new SF-positives since 09-15; Pemmican deep-dive + Miami Attio create still open.",
       "LI-C1 50224 HOLD; SaaS 50290 gated; industry replenish off until next CS.",
       "Inbox warmup mix unread. data.js live Pages still stale vs local (last known push gap)."
     ],
-    "source": "SF get_sequence step1 analytics.completed + list_primebox_threads + list_mailboxes + state/eligible-queue.json + salesforge-inventory-latest.json 2026-09-21T06:18Z + Attio run-basic-report + catchup28 change set + 2026-09-21 attio-hygiene"
+    "source": "SF get_sequence step1 analytics.completed + list_primebox_threads + list_mailboxes + state/eligible-queue.json + salesforge-inventory-latest.json 2026-09-22T06:25Z + Attio run-basic-report + weekday53-applied + 2026-09-22 attio-hygiene"
   },
   "goals": {
     "year": {
@@ -62,25 +63,25 @@ window.ORCHIDEA_OPS = {
       "status": "v2 + SaaS + industry sending/enrolled; refill ecom queue; then judge copy.",
       "items": [
         "Confirm sends in NY window (ecom/SaaS done; watch industry lag).",
-        "Fill ecom queue toward 150\u2013200/day.",
+        "Fill ecom queue toward 150–200/day.",
         "HOLD LI + 50290 + inbox ramp."
       ]
     },
     "month": {
       "label": "September",
       "items": [
-        "v2 + SaaS + industry first-touch footprint (primary\u2248310; industry 88).",
-        "Capacity 200; enroll catchup28 then refill supply.",
+        "v2 + SaaS + industry first-touch footprint (primary≈310; industry 88).",
+        "Capacity 200; refill ecom supply after weekday53 drain.",
         "Keep dashboard data.js current after material Operator/RI moves."
       ]
     },
     "week": {
       "label": "Week of 2026-09-21",
       "items": [
-        "Dylan exact-yes: enroll catchup28 (14\u219250239 + 14\u219250240) OR reject AcceptAll subset.",
+        "Prospector: SCALE refill ecom eligible toward 150–200/day (depth 0) — Apify-free only.",
         "Dylan/RI: Pemmican deep-dive send + Miami Attio person create (exact-yes).",
         "Gyve/SURI OOO follow-up now due (after 2026-09-19).",
-        "SCALE refill toward 150\u2013200/day after catchup drains \u2014 Apify-free only.",
+        "Watch weekday53 step1 send catch-up (52 still on step1 active).",
         "HOLD LI/50290/mailbox ramp. Watch industry+ecom send health."
       ]
     }
@@ -94,8 +95,8 @@ window.ORCHIDEA_OPS = {
     "scale_target": 300,
     "gap": 100,
     "remaining_to_capacity": null,
-    "source": "list_mailboxes: 10 active \u00d7 dailyEmailLimit 20 = 200; sent-today N/A so remaining unknown",
-    "eligible_ecom": 28,
+    "source": "list_mailboxes: 10 active × dailyEmailLimit 20 = 200; sent-today N/A so remaining unknown",
+    "eligible_ecom": 0,
     "eligible_saas": 0,
     "eligible_industry": null,
     "industry_enrolled": 88,
@@ -103,30 +104,30 @@ window.ORCHIDEA_OPS = {
   },
   "pipeline": {
     "eligible": null,
-    "remaining_eligible_depth": 28,
+    "remaining_eligible_depth": 0,
     "target_day": 150,
     "target_day_high": 200,
-    "eligible_ecom_depth": 28,
+    "eligible_ecom_depth": 0,
     "eligible_saas": 0,
     "eligible_industry": null,
     "industry_enrolled": 88,
     "soft_cap_ecom": 200,
-    "prospects_loaded_today_source": "UNKNOWN \u2014 daily-loaded-prospects.json still date_jhb=2026-09-14 (hero was 302). No SoR for 09-15..2026-09-21.",
+    "prospects_loaded_today_source": "UNKNOWN — daily-loaded-prospects.json still date_jhb=2026-09-14 (hero was 302). No SoR for 09-15..2026-09-22.",
     "sources": {
-      "eligible": "UNKNOWN \u2014 no 2026-09-21 daily-loaded-prospects.json",
-      "remaining_eligible_depth": "/home/box/gtm-brain/state/eligible-queue.json counts.eligible=28 (updated 2026-09-18T15:55Z catchup28)",
+      "eligible": "UNKNOWN — no 2026-09-22 daily-loaded-prospects.json",
+      "remaining_eligible_depth": "/home/box/gtm-brain/state/eligible-queue.json counts.eligible=0 (updated 2026-09-21T18:19Z after weekday53 enroll)",
       "eligible_saas": "/home/box/gtm-brain/state/eligible-queue-saas.json eligible=0",
-      "eligible_industry": "null \u2014 no standing industry queue file",
+      "eligible_industry": "null — no standing industry queue file",
       "industry_enrolled": "SF enrollment totals 88; inventory + get_sequence"
     },
-    "note": "Hero prospects loaded today UNKNOWN until Prospector writes 2026-09-21 SoR. Binding: catchup28 (28) awaiting Dylan exact-yes; depth still far below 150\u2013200/day. Do not reuse 09-14 hero 260/302.",
+    "note": "Hero prospects loaded today UNKNOWN until Prospector writes 2026-09-22 SoR. Binding: ecom eligible depth 0 after weekday53; refill toward 150–200/day. Do not reuse 09-14 hero 260/302.",
     "attio": {
       "people": 425,
       "companies": 373,
       "deals": 0,
       "outbound_list": 395,
-      "note": "Attio run-basic-report people=425 companies=373 deals=0 orchidea_outbound_leads=395. Hygiene 08:11 JHB: 2 positives still cold/missing CRM stage (preview only).",
-      "source": "Attio MCP run-basic-report 2026-09-21"
+      "note": "Attio run-basic-report people=425 companies=373 deals=0 orchidea_outbound_leads=395. Hygiene 08:09 JHB: 2 positives still cold/missing CRM stage (preview only).",
+      "source": "Attio MCP run-basic-report 2026-09-22"
     }
   },
   "inboxes": {
@@ -142,15 +143,15 @@ window.ORCHIDEA_OPS = {
     "control": "50239 + 50240 (ecommerce v2) + SaaS 50289 primary first-touch; industry 5 + legacy 48153 tracked separately",
     "contacted": 310,
     "emails_sent": 310,
-    "emails_sent_as_of": "2026-09-21",
-    "emails_sent_source": "SF get_sequence step1 analytics.completed: 50239=150+50240=138+50289=22=310. Step1 active excluded (may be unsent). NOT sent-today. Industry separate=88. Legacy 48153 step1 completed=49.",
+    "emails_sent_as_of": "2026-09-22",
+    "emails_sent_source": "SF get_sequence step1 analytics.completed: 50239=150+50240=138+50289=22=310. Step1 active excluded (may be unsent) — 50239 step1 active=26 + 50240=26 post-weekday53. NOT sent-today. Industry separate=88. Legacy 48153 step1 completed=49.",
     "eligible_delivered": null,
     "salesforge_replies": 13,
     "human_replies_non_ooo": 13,
     "replies_positive": 2,
     "replies_negative": 3,
     "replies_wrong_person": 4,
-    "replies_ooo": 10,
+    "replies_ooo": 11,
     "replies_not_now": 1,
     "qualified_positive_replies": 2,
     "booked_held": null,
@@ -160,7 +161,7 @@ window.ORCHIDEA_OPS = {
     "industry_enrolled": 88,
     "industry_sent": 88,
     "legacy_48153_sent": 49,
-    "source": "Primebox list_primebox_threads total=23: human non-OOO\u224813; OOO replyType=10; SF positive filter=2; wrong_contact=4; negative label=3. Sent=step1 completed proxy.",
+    "source": "Primebox list_primebox_threads total=24: human non-OOO≈13; OOO label=11; SF positive filter=2; wrong_contact=4; negative label=3; meeting_booked=0. Sent=step1 completed proxy.",
     "attio_snapshot": {
       "people": 425,
       "companies": 373,
@@ -174,31 +175,31 @@ window.ORCHIDEA_OPS = {
       "id": "50239",
       "name": "C1-N1-v2 | Performance Partnership | 3-touch",
       "status": "active",
-      "total": 192,
-      "active": 142,
-      "completed": 22,
+      "total": 219,
+      "active": 79,
+      "completed": 111,
       "step1_completed": 150,
-      "note": "LIVE SF get_sequence 2026-09-21"
+      "note": "LIVE SF get_sequence 2026-09-22; +27 weekday53 enroll; step1 active=26"
     },
     {
       "id": "50240",
       "name": "EXP-TACTIC-001-v2 | Deposit-first | 3-touch",
       "status": "active",
-      "total": 181,
-      "active": 126,
-      "completed": 27,
+      "total": 207,
+      "active": 91,
+      "completed": 88,
       "step1_completed": 138,
-      "note": "LIVE SF get_sequence 2026-09-21"
+      "note": "LIVE SF get_sequence 2026-09-22; +26 weekday53 enroll; step1 active=26"
     },
     {
       "id": "50289",
       "name": "C1-SaaS | Growth Leaders | Meetings offer | LIVE",
       "status": "active",
       "total": 22,
-      "active": 20,
-      "completed": 2,
+      "active": 12,
+      "completed": 10,
       "step1_completed": 22,
-      "note": "LIVE SF get_sequence 2026-09-21"
+      "note": "LIVE SF get_sequence 2026-09-22"
     },
     {
       "id": "48153",
@@ -208,57 +209,57 @@ window.ORCHIDEA_OPS = {
       "active": 0,
       "completed": 115,
       "step1_completed": 49,
-      "note": "legacy \u2014 NEVER seed"
+      "note": "legacy — NEVER seed"
     },
     {
       "id": "50383",
       "name": "Health | Appointments offer",
       "status": "active",
       "total": 19,
-      "active": 16,
-      "completed": 3,
+      "active": 6,
+      "completed": 13,
       "step1_completed": 19,
-      "note": "LIVE SF get_sequence 2026-09-21"
+      "note": "LIVE SF get_sequence 2026-09-22"
     },
     {
       "id": "50385",
       "name": "Fitness | Trial bookings offer",
       "status": "active",
       "total": 21,
-      "active": 20,
-      "completed": 1,
+      "active": 9,
+      "completed": 12,
       "step1_completed": 21,
-      "note": "LIVE SF get_sequence 2026-09-21"
+      "note": "LIVE SF get_sequence 2026-09-22"
     },
     {
       "id": "50387",
       "name": "Real Estate | Enquiries/viewings offer",
       "status": "active",
       "total": 21,
-      "active": 17,
-      "completed": 4,
+      "active": 5,
+      "completed": 16,
       "step1_completed": 21,
-      "note": "LIVE SF get_sequence 2026-09-21"
+      "note": "LIVE SF get_sequence 2026-09-22"
     },
     {
       "id": "50388",
       "name": "Education | Enrolments offer",
       "status": "active",
       "total": 6,
-      "active": 5,
-      "completed": 1,
+      "active": 4,
+      "completed": 2,
       "step1_completed": 6,
-      "note": "LIVE SF get_sequence 2026-09-21"
+      "note": "LIVE SF get_sequence 2026-09-22"
     },
     {
       "id": "50392",
       "name": "Home Services | Booked jobs offer",
       "status": "active",
       "total": 21,
-      "active": 19,
-      "completed": 2,
+      "active": 18,
+      "completed": 3,
       "step1_completed": 21,
-      "note": "LIVE SF get_sequence 2026-09-21"
+      "note": "LIVE SF get_sequence 2026-09-22"
     },
     {
       "id": "50224",
@@ -270,13 +271,13 @@ window.ORCHIDEA_OPS = {
       "id": "50290",
       "name": "SaaS DG Hiring",
       "status": "draft",
-      "note": "gated \u2014 job_url required"
+      "note": "gated — job_url required"
     },
     {
       "id": "50027",
       "name": "EXP-MSG-001",
       "status": "held",
-      "note": "held \u2014 do not activate"
+      "note": "held — do not activate"
     },
     {
       "id": "50048",
@@ -284,7 +285,7 @@ window.ORCHIDEA_OPS = {
       "status": "completed",
       "total": 71,
       "completed": 71,
-      "note": "legacy completed \u2014 NEVER seed"
+      "note": "legacy completed — NEVER seed"
     }
   ],
   "motion_surface": [
@@ -293,7 +294,7 @@ window.ORCHIDEA_OPS = {
       "label": "Email ecommerce",
       "kind": "channel",
       "status": "live",
-      "note": "What: ecommerce cold email on Salesforge. Why live: 50239+50240 running 50/50 with step1\u2248281. Dylan next: refill ecom eligible (depth 0) then CO enrolls only to these two; RI handle Pemmican POS.",
+      "note": "What: ecommerce cold email on Salesforge. Why live: 50239+50240 running 50/50 with step1≈288 completed +52 active. Dylan next: refill ecom eligible (depth 0) then CO enrolls only to these two; RI handle Pemmican POS.",
       "url": "https://app.salesforge.ai"
     },
     {
@@ -322,7 +323,7 @@ window.ORCHIDEA_OPS = {
       "label": "Mass video",
       "kind": "channel",
       "status": "not_started",
-      "note": "What: mass video channel. Why not_started: sent-today still null; qpos=0. Dylan next: revisit after readable sent-today + qpos signal."
+      "note": "What: mass video channel. Why not_started: sent-today still null; qpos=2 open no meetings. Dylan next: revisit after readable sent-today + meeting signal."
     },
     {
       "id": "lead_magnets",
@@ -336,7 +337,7 @@ window.ORCHIDEA_OPS = {
       "label": "Offer ecommerce",
       "kind": "lever",
       "status": "live",
-      "note": "What: ecommerce offer \u226420% return / 90d or work free. Why live: Sep 8 offer on v2 sequences. Dylan next: protect offer language (Domitilla learning flag \u2014 do not reintroduce rejected 20%/90-day framing incorrectly)."
+      "note": "What: ecommerce offer ≤20% return / 90d or work free. Why live: Sep 8 offer on v2 sequences. Dylan next: protect offer language (Domitilla learning flag — do not reintroduce rejected 20%/90-day framing incorrectly)."
     },
     {
       "id": "offer_saas",
@@ -350,7 +351,7 @@ window.ORCHIDEA_OPS = {
       "label": "Offer industry meta",
       "kind": "lever",
       "status": "live",
-      "note": "What: industry outcomes \u2014 appointments / trials / enquiries / enrolments / booked jobs. Why live: five pilots enrolled. Dylan next: judge after analytics catch-up, not on enroll-day lag."
+      "note": "What: industry outcomes — appointments / trials / enquiries / enrolments / booked jobs. Why live: five pilots enrolled. Dylan next: judge after analytics catch-up, not on enroll-day lag."
     },
     {
       "id": "messaging_cta",
@@ -370,12 +371,12 @@ window.ORCHIDEA_OPS = {
       "kpi": "Prospects loaded today",
       "target": ">=150/day",
       "actual": null,
-      "gap": "Remaining ecom depth 28 vs 150\u2013200/day; catchup28 awaiting enroll; Apify FREE/Meta blocked; hero loaded-today UNKNOWN",
+      "gap": "Remaining ecom depth 0 vs 150–200/day; weekday53 drained queue; Apify FREE/Meta blocked; hero loaded-today UNKNOWN",
       "measurement": "Unique emails loaded into campaignable paths (daily-loaded-prospects.json)",
       "working": true,
-      "last_outcome": "09-18 catchup filled eligible=28; inventory 09-21 Apify over FREE; prefer Google Ads Transparency / Apify-free",
+      "last_outcome": "09-21 weekday53 enrolled 53 (queue→0); inventory 09-22 Apify over FREE; prefer Google Ads Transparency / Apify-free",
       "paused_routines": [],
-      "status": "live \u2014 supply thin (depth 28); catchup awaiting Dylan yes",
+      "status": "live — supply EMPTY (depth 0); refill is binding",
       "url": null
     },
     {
@@ -390,7 +391,7 @@ window.ORCHIDEA_OPS = {
       "gap": "Tiny n; no winner declaration",
       "measurement": "Primebox labels + step1 completed",
       "working": true,
-      "last_outcome": "KEEP sending 50239/50240; EXP-MSG-001 held",
+      "last_outcome": "KEEP sending 50239/50240; EXP-MSG-001 held; weekday53 n growing",
       "paused_routines": [],
       "status": "live",
       "url": null
@@ -407,7 +408,7 @@ window.ORCHIDEA_OPS = {
       "gap": "No meetings booked",
       "measurement": "Primebox + RI outcomes",
       "working": true,
-      "last_outcome": "2 SF-pos open; Lucky Egg NEG path",
+      "last_outcome": "2 SF-pos open; Lucky Egg NEG path; Citizens OOO new",
       "paused_routines": [],
       "status": "live",
       "url": null
@@ -419,14 +420,14 @@ window.ORCHIDEA_OPS = {
       "mode": "draft-only",
       "lifecycle": "live",
       "kpi": "Authorized enrolls only",
-      "target": "catchup28 after exact-yes",
-      "actual": "catchup28 awaiting Dylan",
-      "gap": "Cannot enroll without exact-yes",
+      "target": "refill CS after Prospector fills queue",
+      "actual": "weekday53 applied 09-21; queue empty",
+      "gap": "No enroll until refill + Dylan path",
       "measurement": "change sets applied",
       "working": true,
-      "last_outcome": "catchup28 drafted 09-18; not applied",
+      "last_outcome": "weekday53 applied 53/53 evening 09-21; catchup28 closed/superseded",
       "paused_routines": [],
-      "status": "live \u2014 blocked on Dylan exact-yes",
+      "status": "live — waiting Prospector refill",
       "url": null
     },
     {
@@ -438,10 +439,10 @@ window.ORCHIDEA_OPS = {
       "kpi": "Same-day triage of positives",
       "target": "0 positive unread backlog",
       "actual": "positive_unread=0; 2 pos open next-step",
-      "gap": "Pemmican deep-dive + Miami Attio create need Dylan",
+      "gap": "Pemmican deep-dive + Miami Attio create need Dylan; Gyve OOO follow-up due",
       "measurement": "Primebox + drafts",
       "working": true,
-      "last_outcome": "Jordan/Stefan handled pos threads; next Dylan decisions open",
+      "last_outcome": "Jordan/Stefan handled pos threads; Citizens OOO new overnight",
       "paused_routines": [],
       "status": "live",
       "url": null
@@ -458,7 +459,7 @@ window.ORCHIDEA_OPS = {
       "gap": "awaiting exact-yes apply",
       "measurement": "hygiene-report.json",
       "working": true,
-      "last_outcome": "2026-09-21 hygiene findings (not applied)",
+      "last_outcome": "2026-09-22 hygiene findings (not applied)",
       "paused_routines": [],
       "status": "live",
       "url": null
@@ -473,14 +474,14 @@ window.ORCHIDEA_OPS = {
   ],
   "open_items": [
     {
-      "id": "oi-catchup28",
-      "text": "Dylan exact-yes: enroll catchup28 (14\u219250239 + 14\u219250240; Deliverable 17 / AcceptAll 11)",
+      "id": "oi-refill",
+      "text": "SCALE refill ecom eligible toward 150–200/day (depth 0 after weekday53) — Apify-free",
       "status": "open",
-      "owner": "Dylan/CO"
+      "owner": "Prospector"
     },
     {
       "id": "oi-pemmican",
-      "text": "Dylan exact-yes: send Pemmican deep-dive (or tweak) \u2014 draft READY; Jordan ack'd",
+      "text": "Dylan exact-yes: send Pemmican deep-dive (or tweak) — draft READY; Jordan ack'd",
       "status": "open",
       "owner": "Dylan/RI"
     },
@@ -497,26 +498,20 @@ window.ORCHIDEA_OPS = {
       "owner": "RI/CO"
     },
     {
-      "id": "oi-refill",
-      "text": "SCALE refill ecom eligible toward 150\u2013200/day after catchup drains (depth 28) \u2014 Apify-free",
-      "status": "open",
-      "owner": "Prospector"
-    },
-    {
       "id": "oi-primally",
-      "text": "Optional: Primally Pure \u2192 kerri@",
+      "text": "Optional: Primally Pure → kerri@",
       "status": "open",
       "owner": "Dylan"
     },
     {
       "id": "oi-hold",
-      "text": "LI-C1 50224 HOLD \u00b7 SaaS 50290 gated \u00b7 mailbox ramp HOLD",
+      "text": "LI-C1 50224 HOLD · SaaS 50290 gated · mailbox ramp HOLD",
       "status": "open",
       "owner": "Dylan"
     },
     {
       "id": "oi-hero",
-      "text": "Hero prospects_loaded_today UNKNOWN (no 2026-09-21 SoR)",
+      "text": "Hero prospects_loaded_today UNKNOWN (no 2026-09-22 SoR)",
       "status": "open",
       "owner": "Prospector"
     },
@@ -537,61 +532,58 @@ window.ORCHIDEA_OPS = {
       "text": "Alfred weekly/monthly/quarterly reviews still paused",
       "status": "open",
       "owner": "Dylan"
+    },
+    {
+      "id": "oi-catchup28",
+      "text": "catchup28 enroll — CLOSED/superseded by weekday53 exact-yes enroll 2026-09-21 evening",
+      "status": "closed",
+      "owner": "Dylan/CO"
     }
   ],
   "bottlenecks": [
     {
       "rank": 1,
-      "type": "decision",
-      "item": "Dylan exact-yes: enroll catchup28 (28 ready in eligible-queue)",
-      "gap": "eligible=28 since 09-18; not enrolled; far below 150\u2013200/day",
-      "journey": "Eligible \u2192 Enrolled.",
-      "unblock": "Owner Dylan \u2192 CO apply. Why: queue sitting idle while sequences burn down.",
-      "test": "Not a copy test \u2014 enroll gate."
+      "type": "supply",
+      "item": "Prospector: refill ecom eligible toward 150–200/day (depth 0)",
+      "gap": "depth 0 vs 150–200; Apify over FREE / Meta blocked; weekday53 drained queue",
+      "journey": "Before Contacted.",
+      "unblock": "Owner Prospector — Apify-free (Google Ads Transparency).",
+      "test": "Not a copy test — supply fill."
     },
     {
       "rank": 2,
       "type": "decision",
       "item": "Dylan/RI: 2 SF-positive next-steps (Pemmican deep-dive + Miami Attio create)",
       "gap": "SF positive=2; CRM still cold; no meeting booked; open since 09-16",
-      "journey": "Replies \u2192 Qualified \u2192 Meeting.",
+      "journey": "Replies → Qualified → Meeting.",
       "unblock": "Owner RI draft + Dylan exact-yes. CRM preview only until yes.",
       "test": "One variable per reply path; do not declare motion win."
     },
     {
       "rank": 3,
-      "type": "supply",
-      "item": "Prospector: refill toward 150\u2013200/day after catchup",
-      "gap": "depth 28 vs 150\u2013200; Apify over FREE / Meta blocked",
-      "journey": "Before Contacted.",
-      "unblock": "Owner Prospector \u2014 Apify-free (Google Ads Transparency).",
-      "test": "Not a copy test \u2014 supply fill."
-    },
-    {
-      "rank": 4,
       "type": "ops",
       "item": "Gyve/SURI OOO follow-up past due (after 2026-09-19)",
       "gap": "OOO until ~09-18; follow-up not sent",
-      "journey": "OOO \u2192 re-engage.",
-      "unblock": "Owner RI/CO \u2014 approve follow-up now.",
+      "journey": "OOO → re-engage.",
+      "unblock": "Owner RI/CO — approve follow-up now.",
       "test": "Ops SLA, not copy."
     },
     {
-      "rank": 5,
+      "rank": 4,
       "type": "structural",
-      "item": "HOLD capacity ramp 200\u2192300 until queue+sends healthy",
-      "gap": "Ceiling 200; depth 28; daily.sends null",
+      "item": "HOLD capacity ramp 200→300 until queue+sends healthy",
+      "gap": "Ceiling 200; depth 0; daily.sends null",
       "journey": "Send capacity.",
-      "unblock": "Owner Dylan/CO \u2014 HOLD 20\u219225\u219230.",
+      "unblock": "Owner Dylan/CO — HOLD 20→25→30.",
       "test": "Scale after queue depth + sent-today known."
     },
     {
-      "rank": 6,
+      "rank": 5,
       "type": "funnel",
-      "item": "Messaging: 2 SF-pos / 310 primary first-touch \u2014 KEEP sending, no winner",
-      "gap": "Tiny n; industry also sending",
-      "journey": "Sent \u2192 Replies \u2192 Qualified.",
-      "unblock": "Owner Messaging \u2014 track 50239 vs 50240; no fake %.",
+      "item": "Messaging: 2 SF-pos / 310 primary first-touch — KEEP sending, no winner",
+      "gap": "Tiny n; weekday53 adds 53; industry also sending",
+      "journey": "Sent → Replies → Qualified.",
+      "unblock": "Owner Messaging — track 50239 vs 50240; no fake %.",
       "test": "Growing n only; no copy kill this week."
     }
   ],
@@ -600,7 +592,7 @@ window.ORCHIDEA_OPS = {
       "id": "EXP-TACTIC-001-v2",
       "status": "active",
       "control": "C1-N1-v2/50239",
-      "note": "Live 50/50; primary step1 completed ~150+131. TEST at growing n only. 1 POS on challenger.",
+      "note": "Live 50/50; primary step1 completed 150+138; +53 weekday53 still on step1 active. TEST at growing n only. 1 POS on challenger.",
       "url": "https://app.salesforge.ai"
     },
     {
@@ -614,7 +606,7 @@ window.ORCHIDEA_OPS = {
       "id": "INDUSTRY-META-5",
       "status": "active",
       "control": null,
-      "note": "50383\u201350392 live; enrolled 88; sent proxy 88; 1 POS (Miami/50387); replenish off.",
+      "note": "50383–50392 live; enrolled 88; sent proxy 88; 1 POS (Miami/50387); replenish off.",
       "url": "https://app.salesforge.ai"
     },
     {
@@ -633,75 +625,74 @@ window.ORCHIDEA_OPS = {
     }
   ],
   "daily": {
-    "as_of": "2026-09-21",
+    "as_of": "2026-09-22",
     "sends": null,
     "delivered": null,
     "remaining_to_capacity": null,
     "capacity_used": null,
     "anomalies": [
-      "Ecom eligible 28 (was 0 on 09-16) but catchup28 unenrolled since 09-18",
-      "Primary FT 310 (was 303) \u2014 50240 step1 +7",
-      "Daily routine failed 2026-09-18; gap until today",
-      "Gyve/SURI OOO follow-up past due (after 09-19)"
+      "Ecom eligible 0 (was 28 on 09-21 AM) after weekday53 enroll 53 evening 09-21",
+      "Primary FT step1 still 310 — new 52 on step1 active not yet completed",
+      "NEW OOO: Citizens of Soil / sarah@ (2026-09-21); primebox 24 (was 23)",
+      "Gyve/SURI OOO follow-up still past due (after 09-19)",
+      "catchup28 closed/superseded by weekday53"
     ],
     "fleet_blockers_changed": true,
     "reply_intelligence": {
-      "primebox_total": 23,
+      "primebox_total": 24,
       "positive": 2,
       "negative": 3,
       "wrong_contact": 4,
-      "ooo": 10,
-      "unread": 8,
+      "ooo": 11,
+      "unread": 9,
       "new_since_prior_daily": [
-        "Luke/Lucky Egg NEG path (2026-09-18)",
-        "WVCEH Wrong contact (2026-09-17)",
-        "Bold Bean Co OOO Amelia (2026-09-17)"
+        "Citizens of Soil / sarah@ OOO harvest (2026-09-21 20:36 JHB)"
       ],
       "meeting_booked": 0
     },
     "decisions_needed": [
-      "Exact-yes enroll catchup28 (14/14 on 50239/50240 incl AcceptAll)?",
+      "Approve Prospector Apify-free ecom refill toward 150–200/day?",
       "Exact-yes Pemmican deep-dive send?",
       "Exact-yes Miami Attio person create + CRM stage?",
       "Approve Gyve/SURI OOO follow-up now?"
     ],
     "notes": [
-      "Capacity 200; daily.sends=null; hero UNKNOWN",
-      "Offer live: 20% revenue growth or work free (Sep 8) \u2014 not ROAS"
+      "Capacity 200; daily.sends=null; hero UNKNOWN; eligible depth 0",
+      "Offer live: 20% revenue growth or work free (Sep 8) — not ROAS"
     ],
     "kpi_proposals": [],
-    "source": "SF get_sequence step1 analytics.completed + list_primebox_threads + list_mailboxes + state/eligible-queue.json + salesforge-inventory-latest.json 2026-09-21T06:18Z + Attio run-basic-report + catchup28 change set + 2026-09-21 attio-hygiene",
-    "sends_note": "null \u2014 mailbox API does not expose sent-today",
+    "source": "SF get_sequence step1 analytics.completed + list_primebox_threads + list_mailboxes + state/eligible-queue.json + salesforge-inventory-latest.json 2026-09-22T06:25Z + Attio run-basic-report + weekday53-applied + 2026-09-22 attio-hygiene",
+    "sends_note": "null — mailbox API does not expose sent-today",
     "sent_today_note": "UNKNOWN"
   },
   "weekly": {
-    "label": "Week of 2026-09-15 \u2192 2026-09-21",
+    "label": "Week of 2026-09-15 → 2026-09-21",
     "keep": [
-      "KEEP 50239/50240 live sending (n growing; 2 SF-pos total \u2014 do not KILL on tiny sample)",
+      "KEEP 50239/50240 live sending (n growing; 2 SF-pos total — do not KILL on tiny sample)",
       "KEEP industry 5 pilots sending (step1 complete; replenish off)",
       "KEEP SaaS 50289 in-flight (22)"
     ],
     "kill": [],
     "scale": [
-      "SCALE enroll catchup28 after Dylan exact-yes, then refill ecom toward 150\u2013200/day Apify-free only"
+      "SCALE enroll catchup28 after Dylan exact-yes, then refill ecom toward 150–200/day Apify-free only"
     ],
     "test": [
-      "TEST nothing new this week \u2014 EXP-MSG-001 stays held; no winner on tiny samples"
+      "TEST nothing new this week — EXP-MSG-001 stays held; no winner on tiny samples"
     ],
     "insights": [
-      "FACT: Primary first-touch step1 completed = 310 (50239=150 + 50240=138 + 50289=22); industry step1 = 88/88 enrolled; SF-pos = 2; ecom eligible = 28; capacity = 10\u00d720=200; Attio deals = 0; meeting_booked = 0.",
-      "FACT: Week delta vs 2026-09-14 weekly seed: primary FT 56\u2192310; industry analytics lag 0\u219288 step1; SF-pos 0\u21922; ecom eligible 7\u219228.",
+      "FACT: Primary first-touch step1 completed = 310 (50239=150 + 50240=138 + 50289=22); industry step1 = 88/88 enrolled; SF-pos = 2; ecom eligible = 28; capacity = 10×20=200; Attio deals = 0; meeting_booked = 0.",
+      "FACT: Week delta vs 2026-09-14 weekly seed: primary FT 56→310; industry analytics lag 0→88 step1; SF-pos 0→2; ecom eligible 7→28.",
       "FACT: catchup28 change set awaiting Dylan exact-yes since 2026-09-18 (Deliverable 17 / AcceptAll 11).",
       "INTERPRETATION: Binding constraint this week is Dylan decision gates (enroll + 2 positive next-steps), not copy quality.",
       "INTERPRETATION: Supply recovered from 0 mid-week to 28 but still far below Stage A 150; without enroll + refill, sequences burn down.",
-      "HYPOTHESIS: Accepting AcceptAll subset (11/28) may raise bounce \u2014 watch closely if enrolled.",
-      "HYPOTHESIS: Deposit-first 50240 may be over-indexing on positives (Pemmican on 50240) \u2014 do not declare; n too small."
+      "HYPOTHESIS: Accepting AcceptAll subset (11/28) may raise bounce — watch closely if enrolled.",
+      "HYPOTHESIS: Deposit-first 50240 may be over-indexing on positives (Pemmican on 50240) — do not declare; n too small."
     ],
     "notes": [
       "Full weekly written 2026-09-21 Mon 09:15 JHB routine.",
       "Live Pages publish still blocked."
     ],
-    "source": "SF get_sequence step1 analytics.completed 2026-09-21 weekly pull (50239/50240/50289 + industry 50383/85/87/88/92); SF list_primebox_threads total=23; positive filter=2; SF list_mailboxes 10 active \u00d7 dailyEmailLimit 20; Attio run-basic-report people=425 companies=373 deals=0 orchidea_outbound_leads=395; state/eligible-queue.json counts.eligible=28 @ 2026-09-18T15:55Z"
+    "source": "SF get_sequence step1 analytics.completed 2026-09-21 weekly pull (50239/50240/50289 + industry 50383/85/87/88/92); SF list_primebox_threads total=23; positive filter=2; SF list_mailboxes 10 active × dailyEmailLimit 20; Attio run-basic-report people=425 companies=373 deals=0 orchidea_outbound_leads=395; state/eligible-queue.json counts.eligible=28 @ 2026-09-18T15:55Z"
   },
   "monthly": {
     "label": "September 2026",
@@ -710,7 +701,7 @@ window.ORCHIDEA_OPS = {
     "sends": 160,
     "capacity_used": null,
     "insights": [
-      "Three live email motions + industry; primary first-touch \u2248160; industry \u224831.",
+      "Three live email motions + industry; primary first-touch ≈160; industry ≈31.",
       "Capacity 200 vs 300; remaining-to-capacity unread.",
       "Supply volatility: queue filled then drained same day 09-14; 09-15 opens at 0.",
       "RI: human_replies_non_ooo=5 (3 wrong + 1 not-now + 1 neg); qpos=0."
@@ -728,7 +719,7 @@ window.ORCHIDEA_OPS = {
     ],
     "next_bets": [
       "Keep v2 + 50289 + industry sending",
-      "Refill ecom queue to 150\u2013200/day",
+      "Refill ecom queue to 150–200/day",
       "Resolve two RI exact-yes decisions",
       "HOLD LI + 50290 + mailbox ramp; industry replenish off"
     ],
@@ -742,12 +733,17 @@ window.ORCHIDEA_OPS = {
       {
         "thread": "Pemmican / rasmus@",
         "label": "positive",
-        "status": "open \u2014 deep-dive draft awaiting Dylan"
+        "status": "open — deep-dive draft awaiting Dylan"
       },
       {
         "thread": "Miami Community Newspapers / michael@",
         "label": "positive",
-        "status": "open \u2014 Attio create + wait on Michael"
+        "status": "open — Attio create + wait on Michael"
+      },
+      {
+        "thread": "Citizens of Soil / sarah@",
+        "label": "ooo",
+        "status": "NEW 09-21 harvest OOO"
       },
       {
         "thread": "Lucky Egg / luke@",
@@ -757,7 +753,7 @@ window.ORCHIDEA_OPS = {
       {
         "thread": "WVCEH / info@",
         "label": "wrong_contact",
-        "status": "new 09-17"
+        "status": "09-17"
       },
       {
         "thread": "Gyve/SURI",
@@ -769,15 +765,15 @@ window.ORCHIDEA_OPS = {
       "positive": 2,
       "negative": 3,
       "wrong_contact": 4,
-      "ooo": 10,
-      "total": 23
+      "ooo": 11,
+      "total": 24
     },
-    "already_handled_note": "Scott DNC applied; Cuyana+Parachute Dylan-send side closed",
-    "learning_flag": "FACT: 2 SF-pos / ~310 primary FT. INTERPRETATION: too small for KEEP/KILL on copy. HYPOTHESIS: deposit-first 50240 may be over-indexing on positives (Pemmican on 50240) \u2014 do not declare.",
+    "already_handled_note": "Scott DNC applied; Cuyana+Parachute Dylan-send side closed; weekday53 enrolled; catchup28 closed",
+    "learning_flag": "FACT: 2 SF-pos / ~310 primary FT; eligible 0 after +53 enroll. INTERPRETATION: binding constraint flipped from enroll-gate to supply refill; too small for KEEP/KILL on copy. HYPOTHESIS: deposit-first 50240 may be over-indexing on positives (Pemmican on 50240) — do not declare.",
     "status": "live",
     "weekday_paused": false
   },
-  "publish_note": "Local latest-weekly.json + open-items + latest-daily weekly block refreshed 2026-09-21 Mon weekly. Live Pages publish still needs browser overwrite to dylang001/orchidea-ops-report main (gh unauthenticated).",
+  "publish_note": "Local latest-daily.json + open-items + data.js refreshed 2026-09-22 AM daily. Live Pages publish still needs browser overwrite to dylang001/orchidea-ops-report main (gh unauthenticated).",
   "gtm_radar": {
     "generated_on": "2026-09-14",
     "timezone": "Africa/Johannesburg",
@@ -790,7 +786,7 @@ window.ORCHIDEA_OPS = {
         "channel": "email",
         "confidence": "benchmark",
         "status": "watch",
-        "metric": "3.43% avg \u00b7 10%+ elite",
+        "metric": "3.43% avg · 10%+ elite",
         "source_name": "Instantly Cold Email Benchmark Report 2026",
         "url": "https://instantly.ai/cold-email-benchmark-report-2026",
         "maps_to": "funnel:replies",
@@ -798,7 +794,7 @@ window.ORCHIDEA_OPS = {
         "why_for_us": "C1-N1 is at 0 human replies on 68 sends. Do not grade copy until delivered is known. The number to watch after Analyst first-run is reply rate vs this ladder, not send ceiling.",
         "proof": {
           "type": "bars",
-          "caption": "Reply-rate tiers from Instantly 2026 (Jan 1\u2013Dec 18 2025 data window).",
+          "caption": "Reply-rate tiers from Instantly 2026 (Jan 1–Dec 18 2025 data window).",
           "rows": [
             {
               "label": "Elite / top 10%",
@@ -818,7 +814,7 @@ window.ORCHIDEA_OPS = {
             {
               "label": "C1-N1 (this week)",
               "value": 0,
-              "hint": "0 / 68 \u00b7 delivered unknown"
+              "hint": "0 / 68 · delivered unknown"
             }
           ]
         }
@@ -830,12 +826,12 @@ window.ORCHIDEA_OPS = {
         "channel": "email",
         "confidence": "benchmark",
         "status": "try",
-        "metric": "58% step 1 \u00b7 42% follow-ups",
+        "metric": "58% step 1 · 42% follow-ups",
         "source_name": "Instantly Cold Email Benchmark Report 2026",
         "url": "https://instantly.ai/cold-email-benchmark-report-2026",
         "maps_to": "motion:email_outbound",
-        "summary": "Same Instantly 2026 set: 58% of replies come from the first touch, 42% from later steps. Sweet spot is 4\u20137 touches; under four leaves replies on the table. Space 3\u20134 days. Step 2 should feel like a reply, not a reminder (~30% lift in their writeup).",
-        "why_for_us": "Before judging EXP-MSG-001, confirm C1-N1 actually has 4\u20137 value-adding steps. A one-and-done control cannot be compared to this benchmark.",
+        "summary": "Same Instantly 2026 set: 58% of replies come from the first touch, 42% from later steps. Sweet spot is 4–7 touches; under four leaves replies on the table. Space 3–4 days. Step 2 should feel like a reply, not a reminder (~30% lift in their writeup).",
+        "why_for_us": "Before judging EXP-MSG-001, confirm C1-N1 actually has 4–7 value-adding steps. A one-and-done control cannot be compared to this benchmark.",
         "proof": {
           "type": "split",
           "caption": "Share of all replies by sequence step (Instantly 2026).",
@@ -848,7 +844,7 @@ window.ORCHIDEA_OPS = {
             {
               "label": "Follow-ups",
               "value": 42,
-              "hint": "4\u20137 touches"
+              "hint": "4–7 touches"
             }
           ]
         }
@@ -861,7 +857,7 @@ window.ORCHIDEA_OPS = {
         "confidence": "vendor",
         "status": "watch",
         "metric": "~1,500 sends / variant",
-        "source_name": "Unify GTM \u00b7 Cold Email A/B Testing",
+        "source_name": "Unify GTM · Cold Email A/B Testing",
         "url": "https://www.unifygtm.com/explore/cold-email-ab-testing",
         "maps_to": "exp:EXP-MSG-001",
         "summary": "Unify's 2026 testing framework: one variable at a time, pre-segment by intent, ~1,500+ sends per variant, hold-out when you want to measure vs doing nothing. Audience quality caps the result more than copy. They cite Instantly 2026 that 42% of replies come from follow-ups.",
@@ -896,10 +892,10 @@ window.ORCHIDEA_OPS = {
         "confidence": "operator_test",
         "status": "try",
         "metric": "9.4% vs 5.2% reply",
-        "source_name": "Growtoro \u00b7 Meeting CTA vs Soft Ask",
+        "source_name": "Growtoro · Meeting CTA vs Soft Ask",
         "url": "https://growtoro.com/blog/cold-email-cta-meeting-vs-soft-ask-split-test",
         "maps_to": "exp:EXP-MSG-001",
-        "summary": "Controlled split across 80k+ sends, same ICP/opener/body, CTA only. Direct meeting ask: 5.2% reply / 8 meetings per 1k. Soft interest-check: 7.8% / 14. Question with no meeting ask: 9.4% / 16, but only if the team converts the thread. Hybrid sequence (question \u2192 soft \u2192 meeting \u2192 breakup) hit 31 meetings / 1k on 40k sends. Calendar links in email 1 cut replies ~30%.",
+        "summary": "Controlled split across 80k+ sends, same ICP/opener/body, CTA only. Direct meeting ask: 5.2% reply / 8 meetings per 1k. Soft interest-check: 7.8% / 14. Question with no meeting ask: 9.4% / 16, but only if the team converts the thread. Hybrid sequence (question → soft → meeting → breakup) hit 31 meetings / 1k on 40k sends. Calendar links in email 1 cut replies ~30%.",
         "why_for_us": "EXP-MSG-001 is Sep 8 verbatim + chat CTA. Chat is closer to a question than a calendar dump. Hold that shape. Do not bolt a booking link onto email 1. Reply Intelligence must be unpaused before a question-CTA can convert threads.",
         "proof": {
           "type": "bars",
@@ -931,7 +927,7 @@ window.ORCHIDEA_OPS = {
         "confidence": "operator_test",
         "status": "watch",
         "metric": "1 positive / 1,041 vs 1,851",
-        "source_name": "Calvin Wiltermood \u00b7 lead magnet vs personalization",
+        "source_name": "Calvin Wiltermood · lead magnet vs personalization",
         "url": "https://www.linkedin.com/posts/wiltermood_for-fun-ive-been-testing-lead-magnets-vs-activity-7449917411354427392-tqwd",
         "maps_to": "motion:lead_magnets",
         "summary": "n=42k, US senior sales/leadership at ProServ or SaaS SMBs. Personalization: 2.7% reply, 2% of those positive (1 positive / 1,851). Lead magnet CTA: 1.2% reply, 8% of those positive (1 positive / 1,041). Magnet won on positive-reply efficiency, lost on raw replies. Reddit operators still report magnet-yes then silence unless the next touch is a conversation, not a PDF drop.",
@@ -943,12 +939,12 @@ window.ORCHIDEA_OPS = {
             {
               "label": "Personalization",
               "value": 1851,
-              "hint": "2.7% reply \u00b7 2% positive"
+              "hint": "2.7% reply · 2% positive"
             },
             {
               "label": "Lead magnet CTA",
               "value": 1041,
-              "hint": "1.2% reply \u00b7 8% positive"
+              "hint": "1.2% reply · 8% positive"
             }
           ]
         }
@@ -960,11 +956,11 @@ window.ORCHIDEA_OPS = {
         "channel": "video",
         "confidence": "vendor",
         "status": "watch",
-        "metric": "60\u201390s \u00b7 hook A/B",
-        "source_name": "Sendspark \u00b7 AI video personalization for outbound",
+        "metric": "60–90s · hook A/B",
+        "source_name": "Sendspark · AI video personalization for outbound",
         "url": "https://www.sendspark.com/resources/ai-video-personalization-outbound-sales",
         "maps_to": "motion:mass_video",
-        "summary": "Vendor playbook, not a third-party benchmark: 60\u201390 second videos, one CTA, send in business hours, A/B the first 5\u201310 seconds. They claim 2x LinkedIn reply vs InMail when the file sits in the native thread. Sequence pattern they recommend: video email \u2192 text follow-up that references the video \u2192 LinkedIn. Score meetings, not views.",
+        "summary": "Vendor playbook, not a third-party benchmark: 60–90 second videos, one CTA, send in business hours, A/B the first 5–10 seconds. They claim 2x LinkedIn reply vs InMail when the file sits in the native thread. Sequence pattern they recommend: video email → text follow-up that references the video → LinkedIn. Score meetings, not views.",
         "why_for_us": "Mass video is not_started. Treat it as a step inside the email sequence after delivered is readable, not a replacement for C1-N1. Do not clone-video blast until inbox warmup mix is known.",
         "proof": {
           "type": "bars",
@@ -973,12 +969,12 @@ window.ORCHIDEA_OPS = {
             {
               "label": "Reply (claimed)",
               "value": 250,
-              "hint": "200\u2013300% vs text"
+              "hint": "200–300% vs text"
             },
             {
               "label": "Meetings (claimed)",
               "value": 45,
-              "hint": "40\u201350% lift"
+              "hint": "40–50% lift"
             },
             {
               "label": "C1-N1 video steps",
@@ -996,7 +992,7 @@ window.ORCHIDEA_OPS = {
         "confidence": "vendor",
         "status": "watch",
         "metric": "Channel mix is a test lever",
-        "source_name": "Unify GTM \u00b7 sequence / follow-up tests",
+        "source_name": "Unify GTM · sequence / follow-up tests",
         "url": "https://www.unifygtm.com/explore/cold-email-ab-testing",
         "maps_to": "motion:linkedin",
         "summary": "Unify lists channel mix (email plus LinkedIn) as a sequence variable to test after subject line, not as a separate 'LinkedIn program' you turn on blindly. Instantly 2026 also maps Mon launch / Wed follow-up / Fri OOO triage; timing is a lever next to channel.",
@@ -1008,7 +1004,7 @@ window.ORCHIDEA_OPS = {
             {
               "label": "Email outbound",
               "value": 100,
-              "hint": "live \u00b7 C1-N1"
+              "hint": "live · C1-N1"
             },
             {
               "label": "LinkedIn",
@@ -1035,11 +1031,11 @@ window.ORCHIDEA_OPS = {
         "channel": "ops",
         "confidence": "benchmark",
         "status": "try",
-        "metric": "<2% bounce \u00b7 14-day warmup",
+        "metric": "<2% bounce · 14-day warmup",
         "source_name": "Instantly Cold Email Benchmark Report 2026",
         "url": "https://instantly.ai/cold-email-benchmark-report-2026",
         "maps_to": "inboxes",
-        "summary": "Instantly 2026: keep bounce under 2% or placement drops. New domains start 5\u201310/day and ramp over 4\u20136 weeks. Erratic volume looks like spam. We already policy 14-day warmup and 20/mailbox. The missing read is the warmed / warming / new mix.",
+        "summary": "Instantly 2026: keep bounce under 2% or placement drops. New domains start 5–10/day and ramp over 4–6 weeks. Erratic volume looks like spam. We already policy 14-day warmup and 20/mailbox. The missing read is the warmed / warming / new mix.",
         "why_for_us": "C1-N1 has 1 bounce on 68 sends (~1.5%), inside the band, but delivered is still unknown so placement is not proven. Do not add inboxes to 'fix' zero replies. Fill warmup mix from Warmforge first.",
         "proof": {
           "type": "compare",
@@ -1060,16 +1056,16 @@ window.ORCHIDEA_OPS = {
       },
       {
         "id": "radar-industry-meta-2026-09-14",
-        "title": "Industry Meta 5 pilots live \u2014 watch send lag",
+        "title": "Industry Meta 5 pilots live — watch send lag",
         "published": "2026-09-14",
         "channel": "email",
         "confidence": "operator_test",
         "status": "watch",
-        "metric": "88 enrolled \u00b7 analytics sent 0",
+        "metric": "88 enrolled · analytics sent 0",
         "source_name": "Orchidea Operator / Salesforge industry_meta_2026_09_14",
         "url": "https://app.salesforge.ai",
         "maps_to": "funnel:sent",
-        "summary": "Five industry pilots (50383/50385/50387/50388/50392) launched ~17:19Z with 88 enrolled. Provider analytics still show sent 0 \u2014 expected lag, not a kill signal yet.",
+        "summary": "Five industry pilots (50383/50385/50387/50388/50392) launched ~17:19Z with 88 enrolled. Provider analytics still show sent 0 — expected lag, not a kill signal yet.",
         "why_for_us": "Do not judge industry copy or kill pilots on enroll-day analytics lag. Watch send catch-up; keep replenish off until next CS.",
         "proof": {
           "type": "bars",
@@ -1083,14 +1079,14 @@ window.ORCHIDEA_OPS = {
             {
               "label": "Analytics sent",
               "value": 0,
-              "hint": "0 \u00b7 lag"
+              "hint": "0 · lag"
             }
           ]
         }
       },
       {
         "id": "radar-pause-incident-2026-09-14",
-        "title": "Unexpected pause watch \u2014 pause-incident rule",
+        "title": "Unexpected pause watch — pause-incident rule",
         "published": "2026-09-14",
         "channel": "ops",
         "confidence": "operator_test",
@@ -1099,7 +1095,7 @@ window.ORCHIDEA_OPS = {
         "source_name": "Orchidea Campaign Operator CS fidelity",
         "url": "https://app.salesforge.ai",
         "maps_to": "fleet:campaign-operator",
-        "summary": "Operating rule: treat unexpected Salesforge pauses/status flips as incidents. Only Dylan-yes destinations and approved CS apply. RI+CRM resumes were explicit CO confirms \u2014 not silent unpauses.",
+        "summary": "Operating rule: treat unexpected Salesforge pauses/status flips as incidents. Only Dylan-yes destinations and approved CS apply. RI+CRM resumes were explicit CO confirms — not silent unpauses.",
         "why_for_us": "Protects live v2/SaaS/industry from silent pause drift. CO KPI includes unexpected-pause watch alongside enroll fidelity to 50239/50240.",
         "proof": {
           "type": "bars",
@@ -1120,16 +1116,16 @@ window.ORCHIDEA_OPS = {
       },
       {
         "id": "radar-capacity-path-200-300-2026-09-14",
-        "title": "Capacity path 200\u2192300 \u2014 HOLD ramp",
+        "title": "Capacity path 200→300 — HOLD ramp",
         "published": "2026-09-14",
         "channel": "ops",
         "confidence": "benchmark",
         "status": "try",
-        "metric": "ceiling 200 \u00b7 scale target 300",
+        "metric": "ceiling 200 · scale target 300",
         "source_name": "Orchidea mailbox capacity plan",
         "url": "https://app.warmforge.ai",
         "maps_to": "capacity:weekday_ceiling",
-        "summary": "Configured weekday ceiling is 10\u00d720=200 with scale target 300. HOLD 20\u219225\u219230 ramp until ecom queue depth and proven sent-today are healthy. daily.sends currently null.",
+        "summary": "Configured weekday ceiling is 10×20=200 with scale target 300. HOLD 20→25→30 ramp until ecom queue depth and proven sent-today are healthy. daily.sends currently null.",
         "why_for_us": "Ramping mailboxes without queue+send proof burns warmup. Keep usable_after_reserve math; do not hero the 300 target until path is clear.",
         "proof": {
           "type": "bars",
@@ -1138,7 +1134,7 @@ window.ORCHIDEA_OPS = {
             {
               "label": "Weekday ceiling",
               "value": 200,
-              "hint": "10\u00d720"
+              "hint": "10×20"
             },
             {
               "label": "Scale target",
